@@ -1,0 +1,12 @@
+{
+  "id": 3,
+  "title": "堡塔代理服务器软件",
+  "tip": "lib",
+  "name": "socks5",
+  "type": "扩展",
+  "ps": "Socks5代理服务器，含用户认证，支持http/ftp/ssh/rdp等协议(不支持海外服务器安装和访问被封锁的网站)",
+  "versions": "1.1",
+  "checks": "/www/server/panel/plugin/socks5",
+  "author": "宝塔",
+  "home": "http://www.bt.cn/bbs"
+}

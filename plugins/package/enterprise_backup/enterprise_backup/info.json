@@ -1,0 +1,12 @@
+{
+    "id": 3,
+    "title": "企业级备份",
+    "tip": "lib",
+    "name": "enterprise_backup",
+    "type": "扩展",
+    "ps": "对Mysql数据库以及目录进行全量和增量备份，备份加密压缩并可选上传到ftp，阿里云和腾讯云<font color=\"#FF0000\">(仅innodb支持增量备份，插件暂时只支持CentOS7和CentOS8)</font>",
+    "versions": "5.4",
+    "checks": "/www/server/panel/plugin/enterprise_backup",
+    "author": "宝塔",
+    "home": "http://www.bt.cn/bbs"
+}

@@ -1,0 +1,30 @@
+#!/usr/bin/python
+#coding: utf-8
+# -------------------------------------------------------------------
+# 宝塔Linux面板
+# -------------------------------------------------------------------
+# Copyright (c) 2015-2099 宝塔软件(https://bt.cn) All rights reserved.
+# -------------------------------------------------------------------
+# Author: 黄文良 <287962566@qq.com>
+# -------------------------------------------------------------------
+
+# ------------------------------
+# socks5代理
+# ------------------------------
+import os,sys
+import socks5_service
+if __name__ == '__main__':
+    pid = os.fork()
+    if pid: sys.exit(0)
+    
+    os.umask(0)
+    os.setsid()
+
+    _pid = os.fork()
+    if _pid:
+        socks5_service.write_file('logs/socks5.pid',str(_pid))
+        sys.exit(0)
+    sys.stdout.flush()
+    sys.stderr.flush()
+
+    socks5_service.main()

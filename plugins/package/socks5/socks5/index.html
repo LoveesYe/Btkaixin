@@ -1,0 +1,517 @@
+<style>
+	 #webEdit-con .bt-w-con{
+		  display: none;
+	 }
+	 .radio_group{
+		  height: 30px;
+		  line-height: 30px;
+		  margin-right: 10px;
+	 }
+	 .radio_group span{
+		  margin-left: 5px;
+		  font-size: 14px;
+		  color: #666;
+		  font-weight: 400;
+	 }
+	 .radio_group input{
+		  width: 14px;
+		  height: 14px;
+	 }
+</style>
+<div class="bt-w-main">
+	 <div class="bt-w-menu">
+		  <p class="bgw">服务状态</p>
+		  <p>用户列表</p>
+		  <p>全局配置</p>
+		  <p>日志</p>
+	 </div>
+	 <div id="webEdit-con" class="pd15">
+		  <div class="bt-w-con" style="display:block;">
+				<div class="soft-man-con" style="padding:10px">
+					 <p class="status">当前状态：<span id="socks_status"></span></p>
+					 <div class="sfm-opt">
+						  <button class="btn btn-default btn-sm set_socks_server start" data-status="start" style="display: none">启动</button>
+						  <button class="btn btn-default btn-sm set_socks_server stop" data-status="stop" style="display: none">停止</button>
+						  <button class="btn btn-default btn-sm set_socks_server" data-status="restart">重启</button>
+						  <button class="btn btn-default btn-sm set_socks_server" data-status="reload">重载服务</button>
+					 </div>
+					 <ul class="help-info-text c7" style="color: red;margin-top: 15px;">
+						  <li>本代理服务器无法访问国内政策禁止访问的网站，如Google、ABC、Youtube等</li>
+						  <li>本代理服务器不能在中国大陆以外的服务器上安装</li>
+						  <li>请在当地政策和法律框架内合法使用代理服务器</li>
+					 </ul>
+				</div>
+		  </div>
+		  <div class="bt-w-con">
+				<div class="mb5"><button class="btn btn-success btn-sm add_socks_user">添加用户</button></div>
+				<div class="divtable mt10" style="height: 380px;overflow: auto;">
+					 <table width="100%" border="0" cellpadding="0" cellspacing="0" class="table table-hover">
+						  <thead><tr><th>用户名</th><th>密码</th><th>发送</th><th>接收</th><th>连接</th><th>状态</th><th style="width:86px;text-align: right;">操作</th></tr></thead>
+						  <tbody id="user-table"></tbody>
+					 </table>
+				</div>
+				<ul class="help-info-text c7"  style="color: red;">
+					 <li>请确保全局配置中已开启代理用户认证功能，否则此处用户将不生效</li>
+					 <li>若添加或修改用户后没有实时生效，请尝试重启代理服务器服务</li>
+					 <li>为防止不必要的安全风险，请不要设置过于简单的密码</li>
+				</ul>
+		  </div>
+		  <div class="bt-w-con">
+				<div class="bt-form" style="padding: 10px 0;">
+					 <div class="line">
+						  <span class="tname">监听IP</span>
+						  <div class="info-r c4">
+								<input class="bt-input-text"  name="config_ip" type="text" style="width:250px" placeholder="请输入代理服务器监听IP" value="">
+						  </div>
+					 </div>
+					 <div class="line">
+						  <span class="tname">监听端口</span>
+						  <div class="info-r c4">
+								<input class="bt-input-text"  name="config_port" type="text" style="width:250px" placeholder="请输入代理服务器监听端口" value="">
+						  </div>
+					 </div>
+					 <div class="line">
+						  <span class="tname">用户认证</span>
+						  <div class="info-r c4">
+								<label class="radio_group"><input type="radio" name="config_auth" checked value="1" /><span>开启</span></label>
+								<label class="radio_group"><input type="radio" name="config_auth" value="0"/><span>关闭</span></label>
+						  </div>
+					 </div>
+					 <div class="line">
+						  <div class="info-r c4" style="margin-left:100px;"><button class="btn btn-success btn-sm save_socks_config">保存配置</button></div>
+					 </div>
+				</div>
+<!--				<ul class="help-info-text c7">-->
+<!--					 <li>默认项目是不能编辑操作的</li>-->
+<!--					 <li>项目映射之后可以直接通过域名访问</li>-->
+<!--				</ul>-->
+		  </div>
+		  <div class="bt-w-con">
+				<div class="divtable mt10">
+					 <table width="100%" border="0" cellpadding="0" cellspacing="0" class="table table-hover">
+						  <thead><tr><th>详情</th><th width="200">操作时间</th></tr></thead>
+						  <tbody id="logs_table"></tbody>
+					 </table>
+				</div>
+				<div class="page" id="logs_page"></div>
+		  </div>
+	 </div>
+</div>
+<script type="text/javascript">
+    $('.layui-layer-page').css('width', '800px');
+    var socks5 = {
+        plugin_name:'socks5',
+        user_list:[],
+        init:function(){
+            this.event();
+            $('.bt-w-menu p:eq(0)').click();
+        },
+        // 事件绑定
+        event:function(){
+            var _this = this;
+            $('.bt-w-menu p').click(function(){
+                var _index = $(this).index();
+                $(this).addClass('bgw').siblings().removeClass('bgw');
+                $('#webEdit-con .bt-w-con:eq('+ _index +')').show().siblings().hide();
+                switch (_index) {
+                    case 0:
+                        _this.get_service_status(function(res){
+                            $('#socks_status').html(res?'<span style="color: #20a53a;"><span>运行中</span><span style="margin-left: 3px;" class="glyphicon glyphicon-play"></span></span>':'<span style="color: red;"><span>已停止</span><span style=" margin-left: 3px;" class="glyphicon glyphicon-pause"></span></span>');
+                            $('[data-status='+ (res?'stop':'start')+']').show();
+                        });
+                        break;
+                    case 1:
+                        _this.create_user_table();
+                        break;
+                    case 2:
+                        _this.config_list(function(res){
+                            $('[name="config_ip"]').val(res.socks5_host);
+                            $('[name="config_port"]').val(res.socks5_port);
+                            $('[name="config_auth"][value="'+ (res.auth?1:0) +'"]').attr("checked",true);
+                        });
+                        break;
+                    case 3:
+                        _this.create_logs_table();
+                        break;
+                }
+            });
+
+            $('.set_socks_server').click(function(){
+                var _type = $(this).attr('data-status');
+                _this.service_admin({status:_type},function (res) {
+                    if(_type == 'stop'){
+                        $('#socks_status').html('<span style="color: red;"><span>已停止</span><span style=" margin-left: 3px;" class="glyphicon glyphicon-pause"></span></span>');
+                        $('[data-status=stop]').show().prev().hide();
+                    }else if(_type == 'start'){
+                        $('#socks_status').html('<span style="color: #20a53a;"><span>运行中</span><span style="margin-left: 3px;" class="glyphicon glyphicon-play"></span></span>');
+                        $('[data-status=start]').show().next().hide();
+                    }
+                    layer.msg(res.msg,{icon:res.status?1:2});
+                })
+            });
+            $('.add_socks_user').click(function(){
+                layer.open({
+                    type: 1,
+                    area:"400px",
+                    title: '添加用户',
+                    closeBtn: 2,
+                    shift: 5,
+                    shadeClose: false,
+                    btn:['提交','取消'],
+                    content:'<div class="bt-form bt-form" style="padding:15px 25px">\
+									 <div class="line">\
+										 <span class="tname" style="width:100px">用户名</span>\
+										 <div class="info-r">\
+											 <input name="socks_user" class="bt-input-text mr5" type="text" style="width: 200px" value="" placeholder="请输入用户名" />\
+										 </div>\
+									 </div>\
+									 <div class="line">\
+										 <span class="tname" style="width:100px">密码</span>\
+										 <div class="info-r">\
+											 <input name="socks_pwd" class="bt-input-text mr5" type="text" style="width: 200px" value="" placeholder="请输入密码">\
+										 </div>\
+									 </div>\
+								 </div>',
+                    yes:function(index,layers){
+                        var user = $('[name=socks_user]').val(),paw = $('[name=socks_pwd]').val();
+                        if(user == ''){
+                            layer.msg('用户名不能为空',{icon:2});
+                            return false;
+                        }
+                        if(paw == ''){
+                            layer.msg('用户名密码不能为空',{icon:2});
+                            return false;
+                        }
+                        _this.create_user({username:user,password:paw},function(res){
+                            if(res.status){
+                                layer.close(index);
+                                _this.create_user_table(function(){ layer.msg(res.msg,{icon:1}); })
+                            }else{
+                                layer.msg(res.msg,{icon:2});
+                            }
+                        });
+                    },
+                });
+            });
+            $('#user-table').on('click','.edit_user',function () {
+                var username = $(this).attr('data-username'),_data = _this.user_list[username];
+                layer.open({
+                    type: 1,
+                    area:"400px",
+                    title: '修改用户',
+                    closeBtn: 2,
+                    shift: 5,
+                    shadeClose: false,
+                    btn:['提交','取消'],
+                    content:'<div class="bt-form bt-form" style="padding:15px 25px">\
+									 <div class="line">\
+										 <span class="tname" style="width:100px">用户名</span>\
+										 <div class="info-r">\
+											 <input name="socks_user" class="bt-input-text mr5" type="text" style="width: 200px" value="'+ _data.username +'" placeholder="请输入用户名" />\
+										 </div>\
+									 </div>\
+									 <div class="line">\
+										 <span class="tname" style="width:100px">密码</span>\
+										 <div class="info-r">\
+											 <input name="socks_pwd" class="bt-input-text mr5" type="text" style="width: 200px" value="'+ _data.password +'" placeholder="请输入密码">\
+										 </div>\
+									 </div>\
+									 <div class="line">\
+										  <span class="tname">状态</span>\
+										  <div class="info-r c4">\
+												<label class="radio_group"><input type="radio" name="socks_status" '+ (_data.status?'checked':'') +' value="1" /><span>开启</span></label>\
+												<label class="radio_group"><input type="radio" name="socks_status" '+ (!_data.status?'checked':'') +' value="0"/><span>关闭</span></label>\
+										  </div>\
+									 </div>\
+								 </div>',
+                    yes:function(index,layers){
+                        var user = $('input[name=socks_user]').val(),paw = $('input[name=socks_pwd]').val(),_status = $('input[name=socks_status]:checked').val();
+                        if(user == ''){
+                            layer.msg('用户名不能为空',{icon:2});
+                            return false;
+                        }
+                        if(paw == ''){
+                            layer.msg('用户名密码不能为空',{icon:2});
+                            return false;
+                        }
+                        _this.modify_user({username:user,password:paw,status:_status},function(res){
+                            if(res.status){
+                                layer.close(index);
+                                _this.create_user_table(function(){ layer.msg(res.msg,{icon:1}); })
+                            }else{
+                                layer.msg(res.msg,{icon:2});
+                            }
+                        });
+                    },
+                });
+            });
+            $('#user-table').on('click','.modify_user_status',function(){
+                var _user = $(this).attr('data-username'),_data =  _this.user_list[_user]
+                _data['status'] = !_data['status'];
+                _this.modify_user({username:_data['username'],password:_data['password'],status:_data['status']?1:0},function(res){
+                    if(res.status){
+                        _this.create_user_table(function(){ layer.msg(res.msg,{icon:1}); })
+                    }else{
+                        layer.msg(res.msg,{icon:2});
+                    }
+                });
+            });
+            $('#user-table').on('click','.del_user',function () {
+                var _user = $(this).attr('data-username');
+                layer.confirm('是否删除当前用户'+ _user +',是否继续？',{btn:['确认','取消'],icon:3,closeBtn: 2,title:'删除用户'},function(){
+                    _this.remove_user({username:_user},function(res){
+                        if(res.status){
+                            _this.create_user_table(function(){ layer.msg(res.msg,{icon:1}); })
+                        }else{
+                            layer.msg(res.msg,{icon:2});
+                        }
+                    });
+                });
+            });
+            $('.save_socks_config').click(function(){
+                var _ip = $('input[name="config_ip"]').val(),_port = $('input[name="config_port"]').val(),_auth = $('input[name="config_auth"]:checked').val();
+                _this.modify_config({
+                    socks5_host:_ip,
+                    socks5_port:_port,
+                    auth:_auth
+                },function(res){
+                    layer.msg(res.msg,{icon:res.status?1:2});
+                });
+            });
+            $('#logs_page').on('click','a',function(){
+                var _href = $(this).attr('href');_page = 1;
+                _page =  _href.replace(/p\=/,'');
+                _this.create_logs_table({p:_page});
+                return false;
+            });
+            $('#user-table').on('click','.show_paw',function(){
+                var _paw = $(this).attr('data-paw');
+                if($(this).hasClass('glyphicon-eye-open')){
+                    $(this).addClass('glyphicon-eye-close').removeClass('glyphicon-eye-open');
+                    $(this).prev().html(_paw);
+                }else{
+                    $(this).addClass('glyphicon-eye-open').removeClass('glyphicon-eye-close');
+                    $(this).prev().html('************');
+                }
+            });
+        },
+        create_user_table:function(callback){
+            var _this = this;
+            this.get_user_list(function(res){
+                var _html = '';
+                for(var item in res){
+                    _html+='<tr><td>'+ item +'</td>\
+                        <td><span>************</span><span class="glyphicon glyphicon-eye-open cursor show_paw" style="margin-left: 5px;position: relative;" data-paw="'+ res[item].password +'"></span></td>\
+                        <td>'+ bt.format_size(res[item].total_today['recv']) +'</td>\
+                        <td>'+ bt.format_size(res[item].total_today['send']) +'</td>\
+                        <td>'+ res[item].total_today['connect'] +'</td>\
+                        <td>'+ (res[item].status?'<a href="javascript:;" class="btlink modify_user_status" data-username="'+ res[item].username +'" data-status="'+ res[item].status +'"><span style="color: #20a53a;"><span>正常</span><span style="margin-left: 3px;" class="glyphicon glyphicon-play"></span></span></a>':'<a href="javascript:;" class="btlink modify_user_status" data-username="'+ res[item].username +'" data-status="'+ res[item].status +'"><span style="color: red;"><span>停用</span><span style=" margin-left: 3px;" class="glyphicon glyphicon-pause"></span></span></a>') +'</td>\
+                        <td style="text-align:right;">\
+                            <a href="javascript:;" class="btlink edit_user" data-username="'+ item  +'">修改</a>&nbsp;|&nbsp;<a href="javascript:;" class="btlink del_user" data-username="'+ item  +'" >删除</a>\
+                        </td></tr>'
+                }
+                $('#user-table').html(_html);
+                _this.user_list = res;
+                if(callback) callback(res);
+            });
+        },
+        create_logs_table:function(data){
+            var _this = this,_html = ''
+            if(data == undefined) data = {p:1};
+            this.get_logs({p:data.p || 1},function(res){
+                var rdata = res.data;
+                for(var i=0;i<rdata.length;i++){
+                    _html +='<tr><td>'+ rdata[i].log +'</td><td>'+ rdata[i].addtime +'</td></tr>'
+                }
+                $('#logs_table').html(_html);
+                $('#logs_page').html(res.page);
+            });
+        },
+        // 获取用户列表（请求）
+        get_user_list:function(data,callback){
+            if(typeof data === "function") callback = data;
+            this.send({
+                tips:'正在获取用户列表，请稍后...',
+                method: 'get_user_list',
+                check:true,
+                success:function(res){
+                    if(callback) callback(res)
+                }
+            });
+        },
+        // 创建用户（请求）
+        create_user:function(data,callback){
+            if(typeof data === "function") callback = data;
+            this.send({
+                tips:'正在创建用户，请稍后...',
+                method: 'create_user',
+                data:{username:data.username,password: data.password},
+                success:function(res){
+                    if(callback) callback(res)
+                }
+            });
+        },
+        // 编辑用户（请求）
+        modify_user:function(data,callback){
+            if(typeof data === "function") callback = data;
+            this.send({
+                tips:'正在修改用户信息，请稍后...',
+                method: 'modify_user',
+                data:{
+                    username:data.username,
+                    password:data.password,
+                    status:data.status
+                },
+                success:function(res){
+                    if(callback) callback(res)
+                }
+            });
+        },
+        // 删除用户（请求）
+        remove_user:function(data,callback){
+            if(typeof data === "function") callback = data;
+            this.send({
+                tips:'正在删除用户，请稍后...',
+                method: 'remove_user',
+                data:{username:data.username},
+                success:function(res){
+                    if(callback) callback(res)
+                }
+            });
+        },
+        // 获取服务状态（请求）
+        get_service_status:function(data,callback){
+            if(typeof data === "function") callback = data;
+            this.send({
+                tips:'正在获取服务状态，请稍后...',
+                method: 'get_service_status',
+                check:true,
+                success:function(res){
+                    if(callback) callback(res)
+                }
+            });
+        },
+        // 设置服务状态（请求）
+        service_admin:function(data,callback){
+            if(typeof data === "function") callback = data;
+            var _tips = '';
+            switch (data.status) {
+                case 'reload':  //重载服务
+                    _tips = '重载服务';
+                    break;
+                case 'restart': //重启服务
+                    _tips = '重启服务';
+                    break;
+                case 'stop': //停止服务
+                    _tips = '停止服务';
+                    break;
+                case 'start': //启动服务
+                    _tips = '启动服务';
+                    break;
+            }
+            this.send({
+                tips:'正在'+ _tips +'，请稍后...',
+                method: 'service_admin',
+                data:{status:data.status},
+                check:true,
+                success:function(res){
+                    if(callback) callback(res)
+                }
+            });
+        },
+        // 获取全局配置列表（请求）
+        config_list:function(data,callback){
+            if(typeof data === "function") callback = data;
+            this.send({
+                tips:'正在获取全局配置，请稍后...',
+                method: 'config_list',
+                check:true,
+                success:function(res){
+                    if(callback) callback(res)
+                }
+            });
+        },
+        // 编辑全局配置（请求）
+        modify_config:function(data,callback){
+            if(typeof data === "function") callback = data;
+            this.send({
+                tips:'正在修改全局配置，请稍后...',
+                method: 'modify_config',
+                data:{socks5_host:data.socks5_host,socks5_port:data.socks5_port,auth:data.auth},
+                success:function(res){
+                    if(callback) callback(res)
+                }
+            });
+        },
+        // 获取操作日志（请求）
+        get_logs:function(data,callback){
+            if(typeof data === "function"){
+                callback = data;
+                data = {p:1};
+            }
+            this.send({
+                tips:'正在获取操作日志，请稍后...',
+                method: 'get_logs',
+                data:{p:data.p,tojs:data.tojs || ''},
+                check:true,
+                success:function(res){
+                    if(callback) callback(res)
+                }
+            });
+        },
+        // 请求
+        send: function (obj) {
+            var loadT = '';
+            if (obj.load == undefined) obj.load = 0;
+            if (obj.url == undefined) {
+                if (obj.plugin_name === undefined && this.plugin_name !== undefined) obj.plugin_name = this
+                    .plugin_name
+                if (!obj.plugin_name || !obj.method) {
+                    layer.msg('插件类名称，或插件方法名称缺失!', {
+                        icon: 2
+                    });
+                    return false;
+                }
+            }
+            if (obj.load === 0 || obj.tips != '') {
+                loadT = layer.msg(obj.tips, {
+                    icon: 16,
+                    time: 0,
+                    shade: 0.3
+                });
+            } else if (obj.load === 1 || (obj.tips == undefined && obj.load == undefined)) {
+                loadT = layer.load();
+            }
+            $.ajax({
+                type: 'POST',
+                url: obj.url != undefined ? obj.url : ('/plugin?action=a&name=' + obj.plugin_name + '&s=' + obj.method),
+                data: obj.data || {},
+                timeout: obj.timeout || 99999999,
+                complete: function (res) {
+                    if (obj.load === 0 || obj.load === 1) layer.close(loadT);
+                },
+                success: function (rdata) {
+                    if (obj.check) {
+                        obj.success(rdata);
+                        return false
+                    }
+                    if (rdata.status === false) {
+                        layer.msg(rdata.msg, { icon: 2 });
+                        return false;
+                    }
+                    obj.success(rdata);
+                },
+                error: function (ex) {
+                    if (!obj.error) {
+                        obj.msg || obj.msg == undefined ? layer.msg('请求过程发现错误!', {
+                            icon: 2
+                        }) : '';
+                        return;
+                    }
+                    return obj.error(ex);
+                }
+            });
+        }
+    }
+    socks5.init();
+</script>

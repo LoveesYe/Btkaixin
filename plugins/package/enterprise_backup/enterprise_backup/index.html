@@ -1,0 +1,3334 @@
+<style>
+	.bt_select_group {
+		height: 32px;
+		line-height: 30px;
+		border: 1px solid #c2c2c2;
+		border-radius: 2px;
+		box-sizing: border-box;
+		position: relative;
+		display: inline-block;
+		width: 190px;
+		transition: all 500ms
+	}
+
+	.bt_select_active {
+		height: 100%;
+		max-width: 240px;
+		width: 100%
+	}
+
+	.bt_select_active .select_val {
+		cursor: pointer;
+		height: 100%;
+		width: 100%;
+		display: inline-block;
+		padding-left: 15px;
+		color: #555
+	}
+
+	.bt_select_active .select_val.default {
+		color: #d2d2d2
+	}
+
+	.bt_select_active .glyphicon {
+		color: #aaa;
+		font-size: 12px;
+		position: absolute;
+		right: 10px;
+		top: 50%;
+		margin-top: -6px;
+		transition: all 400ms
+	}
+
+	.bt_select_ul {
+		border: 1px solid #d2d2d2;
+		padding: 5px 0;
+		border-radius: 2px;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, .12);
+		position: absolute;
+		z-index: 9999;
+		background: #fff;
+		left: -1px;
+		right: -1px;
+		top: 29px;
+		border-radius: 2px;
+		display: none
+	}
+
+	.bt_select_ul.active {
+		display: block
+	}
+
+	.bt_select_ul li {
+		padding-left: 15px;
+		cursor: pointer;
+		color: #555;
+		margin: 0 !important
+	}
+
+	.bt_select_ul li.active {
+		background: #20a53a !important;
+		color: #fff
+	}
+
+	.bt_select_ul li:hover {
+		background: #f2f2f2;
+		transition: .2s all
+	}
+
+	.bt_checkbox_groups::active {
+		background: #1b8c31;
+		border-color: #1b8c31
+	}
+
+	.bt_checkbox_groups {
+		display: inline-block;
+		height: 16px;
+		width: 16px;
+		border-radius: 1px;
+		cursor: pointer;
+		border: 1px solid #c2c2c2;
+		position: relative;
+		text-align: center;
+		line-height: 20px;
+		margin: 0;
+		vertical-align: top
+	}
+
+	.bt_checkbox_groups.active {
+		border: none;
+		position: relative;
+		top: 1px;
+		display: inline-block;
+		font-family: 'Glyphicons Halflings';
+		font-style: normal;
+		font-weight: 400;
+		line-height: 1;
+		-webkit-font-smoothing: antialiased;
+		background: #20a53a;
+		color: #fff
+	}
+
+	.bt_checkbox_groups.active:after {
+		content: "\e013";
+		font-size: 12px;
+		transform: scale(.85);
+		position: absolute;
+		left: 2px;
+		top: 2px;
+	}
+
+	.animated {
+		-webkit-animation-duration: .2s;
+		animation-duration: .2s;
+		-webkit-animation-fill-mode: both;
+		animation-fill-mode: both
+	}
+
+	@-webkit-keyframes fadeInUp {
+		0% {
+			opacity: 0;
+			-webkit-transform: translate3d(0, 10%, 0);
+			transform: translate3d(0, 10%, 0)
+		}
+		to {
+			opacity: 1;
+			-webkit-transform: none;
+			transform: none
+		}
+	}
+
+	@keyframes fadeInUp {
+		0% {
+			opacity: 0;
+			-webkit-transform: translate3d(0, 10%, 0);
+			transform: translate3d(0, 10%, 0)
+		}
+		to {
+			opacity: 1;
+			-webkit-transform: none;
+			transform: none
+		}
+	}
+
+	.fadeInUp {
+		-webkit-animation-name: fadeInUp;
+		animation-name: fadeInUp
+	}
+
+	/*.layui-layer-page .layui-layer-content {*/
+	/*	overflow: inherit;*/
+	/*}*/
+
+	.bt-w-menu span {
+		height: 45px;
+		line-height: 45px;
+		text-align: left;
+		padding-left: 19px;
+		display: inline-block;
+		width: 100%;
+		cursor: pointer;
+	}
+
+	.bt-w-item {
+		display: none;
+		width: 100%;
+	}
+
+	.bt-w-item.active {
+		display: inline-block;
+	}
+
+	.mysql_content_list {
+		overflow: auto;
+		width: 380px;
+		max-height: 200px;
+		border: 1px solid #ececec;
+		padding: 5px;
+		border-radius: 2px;
+	}
+
+	.mysql_content_list li {
+		line-height: 30px;
+	}
+
+	.mysql_content_list > li:last-child {
+		border-bottom: none;
+	}
+
+	.mysql_content_list .mysql_checkbox_group {
+		height: 30px;
+		line-height: 30px;
+		position: relative;
+		font-size: 0px;
+		cursor: pointer;
+	}
+
+	.mysql_content_list .bt_checkbox_groups {
+		position: relative;
+		top: 7px;
+	}
+
+	.mysql_checkbox_find_list {
+		background: #fff;
+		cursor: pointer;
+	}
+
+	.mysql_checkbox_find_list li {
+		position: relative;
+	}
+
+	.mysql_content_list .mysql_checkbox_group:hover {
+		background-color: #efefef;
+		cursor: pointer;
+	}
+
+	.mysql_checkbox_find_list .mysql_checkbox_group {
+		background: transparent;
+		padding-left: 45px;
+		margin-left: 10px;
+	}
+
+	.mysql_content_list .mysql_checkbox_group .glyphicon {
+		width: 25px;
+		display: inline-block;
+		height: 30px;
+		line-height: 28px;
+		text-align: center;
+		color: #bbb;
+	}
+
+	.mysql_checkbox_list span, .mysql_content_list .mysql_checkbox_title {
+		font-size: 12px;
+		color: #666;
+		vertical-align: middle;
+		display: inline-block;
+	}
+
+	.mysql_content_list .mysql_checkbox_title {
+		margin-left: 10px;
+	}
+
+	.mysql_content_list .mysql_checkbox_title i {
+		font-style: normal;
+		color: #bbb;
+	}
+
+	.btn-group button {
+		height: 32px;
+		padding: 0 15px;
+	}
+
+	.box-group {
+		display: inline-block;
+		margin-right: 10px;
+		vertical-align: middle;
+		height: 32px;
+	}
+
+	.box-group:nth-child(1) .bt_select_group {
+		width: 80px;
+	}
+
+	.box-group:nth-child(2) .bt_select_group {
+		width: 70px;
+	}
+
+	.box-group input[type=number] {
+		width: 50px;
+		height: 30px;
+		border: none;
+		text-align: center;
+		vertical-align: top;
+	}
+
+	.box-group input[type=number]:active, .box-group input[type=number]:focus {
+		outline: none;
+	}
+
+	.box-group .fieldInput {
+		border: 1px solid #ccc;
+		border-top-left-radius: 2px;
+		border-bottom-left-radius: 2px;
+		display: inline-block;
+	}
+
+	.box-group .fieldName {
+		display: inline-block;
+		height: 32px;
+		line-height: 32px;
+		padding: 0 8px;
+		border: 1px solid #ccc;
+		border-left: none;
+		border-top-right-radius: 2px;
+		border-bottom-right-radius: 2px;
+		text-align: center;
+		background-color: #f6f6f6;
+		vertical-align: top;
+	}
+
+	.box-group .storage_checkbox_title {
+		display: inline-block;
+		line-height: 32px;
+		height: 32px;
+		padding-left: 8px;
+		margin-right: 10px;
+		font-size: 13px;
+		cursor: pointer;
+	}
+
+	.box-group .bt_checkbox_groups {
+		vertical-align: sub;
+	}
+
+	.line {
+		padding: 8px 0 8px 15px;
+	}
+
+	.info-r .tips {
+		padding-top: 7px;
+		width: 425px;
+		color: #888;
+		line-height: 18px;
+	}
+
+	.full_form, .inc_form {
+		padding: 10px 0;
+		border-bottom: 1px solid #ececec;
+	}
+
+	.full_form {
+		border-top: 1px solid #ececec;
+	}
+
+	.inc_form {
+		margin-bottom: 10px;
+	}
+
+	.inline-tips {
+		display: inline-block;
+		height: 32px;
+		line-height: 32px;
+		padding-left: 5px;
+		color: #888;
+	}
+
+	.open_path_icon {
+		margin-left: 5px;
+		font-size: 15px;
+		cursor: pointer;
+		height: 32px;
+		line-height: 32px;
+		width: 18px;
+		outline: none;
+		vertical-align: bottom;
+	}
+
+	.list-list span.glyphicon {
+		vertical-align: sub;
+	}
+
+	#RecoveryView .tab, #logsView .tab {
+		height: 50px;
+		line-height: 50px;
+		display: flex;
+	}
+
+	#RecoveryView .tab span, #logsView .tab span {
+		flex: 1;
+		text-align: center;
+		background: #ececec;
+		font-size: 13px;
+		color: #666;
+		cursor: pointer;
+	}
+
+	#RecoveryView .tab span.active, #logsView .tab span.active {
+		background: #fff;
+	}
+
+	#RecoveryView .tabContent > div, #logsView .tabContent > div {
+		padding: 15px 10px;
+	}
+
+	.layui-layer-dialog .tips {
+		display: block;
+		font-size: 13px;
+		color: red;
+		margin-top: 5px;
+	}
+
+	.text-ellipsis {
+		display: block;
+		margin-top: -2.5px;
+		margin-bottom: -2.5px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	#logsFullView, #logsIncView, .backup_logs {
+		overflow: auto;
+		border: 0px none;
+		line-height: 23px;
+		padding: 15px;
+		margin: 0px;
+		white-space: pre-wrap;
+		height: 450px;
+		background-color: rgb(51, 51, 51);
+		color: #f1f1f1;
+		border-radius: 0px;
+	}
+
+	.backupDownload {
+		padding: 20px 25px;
+	}
+
+	.backupDownload .backupName, .backupDownload .backupSize, .backupDownload .backupTime, .backupDownload .backupTarPass {
+		height: 30px;
+		line-height: 30px;
+		font-size: 13px;
+		color: #555;
+	}
+
+	.backupDownload .backupName span:nth-child(1), .backupDownload .backupSize span:nth-child(1), .backupDownload .backupTime span:nth-child(1), .backupDownload .backupTarPass span:nth-child(1) {
+		width: 80px;
+		text-align: right;
+		display: inline-block;
+		padding-right: 10px;
+	}
+
+	.ico-copy {
+		background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAABNElEQVQ4T8WUv07DMBDG77xkAQbEyBMwMLEwIJWHgCeIrCQiEw/Q8gIsEYt9OxJPUTYWVoTYmNno5ih3yFETVY0LLv/q0Xf++bvvfEYIrKIotpxzR6HYir0ZET36GIYStNZjAJisAQRmPiaih1XAFmaMiYJqrafMPCGiaQssy3LHOZeKyPZcVXeRfKaSmV+I6HYATNN0pJS6EZGndcoEgD1r7WkQiIhjH4wFZlk2apqmPfO/QK31HQCcfaH0XCn1Fqsw2PmlC2RzJf96U/7CwyiRm/NQa+2fzMGCzEHX/YxHKwwABxYYY646IAA8I+IJM1/0n4Of5e+OHiLeA8AsSRJbVdV7W85PgMvz3wH3lVKvXW0i0vuGOLCw3xCRa2vt5aInfTDP88O6rnej3sw8yXu2nP8BYDlJJLuIWGgAAAAASUVORK5CYII=');
+		display: inline-block;
+		cursor: pointer;
+		height: 18px;
+		width: 18px;
+		background-size: 18px;
+		margin-left: 5px;
+		vertical-align: sub;
+	}
+
+	.backupCloudList {
+		padding-top: 15px;
+	}
+
+	.backupCloudList li {
+		height: 40px;
+		line-height: 40px;
+		margin-bottom: 10px;
+		border: 1px solid #ececec;
+		text-align: center;
+		font-size: 13px;
+		border-radius: 2px;
+	}
+
+	.backupCloudList li:hover {
+		background: #efefef;
+	}
+
+	.backupCloudList li a {
+		display: block;
+		color: #20a53a;
+	}
+
+	.bt-w-main {
+		height: 600px;
+	}
+
+	.cloud_list {
+		display: inline-block;
+		height: 150px;
+		width: 130px;
+		border: 1px solid #ddd;
+		border-radius: 2px;
+		margin-right: 10px;
+		text-align: center;
+	}
+
+	.cloud_list .cloud_title {
+		display: inline-block;
+		width: 100%;
+		height: 35px;
+		line-height: 35px;
+		color: #666;
+		background-color: #f1f1f1;
+		border-bottom: 1px solid #dddddd;
+	}
+
+	.cloud_list .cloud_status {
+		width: 100%;
+		display: inline-block;
+		font-size: 12px;
+		padding-top: 30px;
+		padding-bottom: 20px;
+	}
+
+	.cloud_list .cloud_status.success {
+		color: #20a53a;
+	}
+
+	.cloud_list .cloud_status.error {
+		color: red;
+	}
+
+	.cloud_list .cloud_btn {
+		background: #20a53a;
+		color: #fff;
+		padding: 6px 15px;
+		border: none;
+		outline: none;
+	}
+
+	.cloud_list .cloud_btn:hover {
+		background: #1b8c31;
+	}
+
+	#cloud_from input {
+		width: 270px;
+	}
+
+	#cloud_from .info-r .tips {
+		padding-top: 2px;
+		padding-left: 11px;
+	}
+
+	#cloud_from .line .tname {
+		width: 110px;
+	}
+	.backupDownload>.backupName>span:nth-child(1){
+		vertical-align: top;
+
+	}
+	.backupDownload>.backupName>span:nth-child(2),
+	#pathTable tbody td:nth-child(1)>span ,
+	#databaseTable tbody td:nth-child(1)>span {
+	    display: inline-block;
+	    overflow: hidden;
+	    text-overflow: ellipsis;
+	    white-space: nowrap;
+			width: 110px;
+	}
+	.backupDownload>.backupName>span:nth-child(2){
+		width: 240px;
+	}
+	.mysql_checkbox_group{
+		padding-left: 10px;
+	}
+	#sqlDataTable tbody a:focus, #sqlDataTable tbody a:hover {
+        text-decoration: none;
+    }
+    .logs-backup .tname{
+        width: 74px;
+    }
+</style>
+<style>
+    .logs-backup .mask-time{
+        display: none;
+    }
+    .logs-backup .mask-time.active{
+        display: inline-block;
+    }
+    .bt-backup-select-button {
+        display: inline-block;
+        position: relative;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        cursor: pointer;
+        font-size: 13px;
+    }
+    .bt-backup-select-button .select-picker-search{
+        height: 32px;
+        line-height: 32px;
+        padding-left: 10px;
+        border: none;
+        outline: none;
+    }
+    .bt-backup-select-button:hover{
+        background-color: #eee;
+    }
+    .bt-backup-select-button .select-picker-search span{
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        display: block;
+    }
+    .bt-backup-select-button input {
+        margin: 10px 10px 0 10px;
+        padding: 0 0 5px 0;
+        height: 25px;
+        line-height: 25px;
+        border: none;
+        border-bottom: 1px solid #fafafa;
+    }
+    .bt-backup-select-button input:focus{
+        outline:none;
+    } 
+    .bt-backup-select-button .down-select-full {
+        display: inline-block;
+        width: 0;
+        height: 0;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #777 transparent transparent transparent;
+        position: absolute;
+        top: 14px;
+        right: 10px;
+    }
+    .bt-backup-select-button .select-list-item{
+        transition: all 500ms;
+        display: none;
+        box-shadow: 0 1px 5px rgba(0,0,0,.2);
+    }
+    .bt-backup-select-button .select-list-item ul{
+        max-height: 240px;
+        overflow: auto;
+    }
+    .bt-backup-select-button .select-list-item li {
+        height: 30px;
+        line-height: 30px;
+        padding-left: 10px;
+        cursor: pointer;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .bt-backup-select-button .select-list-item li:hover{
+        background: #20a53a;
+        color: #fff;
+    }
+    .bt-backup-select-button .only-one .select-list-item li.active{
+        background-color: #20a53a;
+        color: #fff;
+    }
+    .bt-backup-select-button .select-check-full {
+        display: inline-block;
+        height: 16px;
+        width: 16px;
+        border-radius: 1px;
+        margin-right: 5px;
+        cursor: pointer;
+        border: 1px solid #c2c2c2;
+        position: relative;
+        text-align: center;
+        line-height: 20px;
+        transition: all 200ms;
+        vertical-align: sub;
+    }
+    .bt-backup-select-button .select-list-item li.active .select-check-full {
+        border: none;
+        position: relative;
+        top: 1px;
+        display: inline-block;
+        font-family: 'Glyphicons Halflings';
+        font-style: normal;
+        font-weight: 400;
+        line-height: 1;
+        -webkit-font-smoothing: antialiased;
+        background: #5FB878;
+        color: #fff;
+    }
+    .bt-backup-select-button .select-list-item li.active .select-check-full:after {
+        content: "\e013";
+        font-size: 12px;
+        transform: scale(.85);
+        position: absolute;
+        left: 2px;
+        top: 2px;
+    }
+    .logs-backup .select-list-item {
+        transition: all 500ms;
+        background: #fff;
+        position: absolute;
+        top: 36px;
+        display: none;
+        box-shadow: 0 1px 5px rgba(0, 0, 0, .2);
+        border-radius: 4px;
+        z-index: 2;
+    }
+    .logs-backup .only-one {
+        position: relative;
+    }
+</style>
+<div id="enterprise_backup" class="bt-w-main">
+	<div class="bt-w-menu" bt-event-click="tabCut|span">
+		<span class="bgw">数据库备份</span>
+        <span>文件目录备份</span>
+        <span>日志备份</span>
+		<span>备份存储</span>
+		<span>备份记录迁移</span>
+	</div>
+	<div class="bt-w-con pd15">
+		<div class="bt-w-item active">
+			<div class="tools-group">
+				<button class="btn btn-success btn-sm" bt-event-click="addBackup">添加数据库备份</button>
+			</div>
+			<div id="databaseTable" class="divtable" style="width: 100%;margin-top: 15px;"></div>
+		</div>
+		<div class="bt-w-item">
+			<div class="tools-group">
+				<button class="btn btn-success btn-sm" bt-event-click="addBackup">添加文件目录备份</button>
+			</div>
+			<div id="pathTable" class="divtable" style="width: 100%;margin-top: 15px;"></div>
+        </div>
+        <div class="bt-w-item">
+			<div style="border-bottom: 1px solid #ccc;margin-bottom: 10px;padding-left: 14px;padding-bottom: 9px;">
+                <span style="font-size: 13px;margin-right: 14px;">日志备份</span>
+			    <input class="btswitch btswitch-ios" id="log-backup" type="checkbox" checked="">
+                <label class="btswitch-btn" for="log-backup" style="display: inline-block;vertical-align: middle;" bt-event-click="backupLogsStatus"></label>
+                <button class="btn btn-default btn-sm" bt-event-click="checkBackupLogs" style="float: right;" type="button">查看日志</button>
+                <button class="btn btn-default btn-sm" bt-event-click="excudeBackup" style="float: right;margin-right: 10px;" type="button">执行备份</button>
+            </div>
+            <form class="logs-backup">
+                <div class="line" style="padding-bottom: 0;">
+                    <span class="tname">备份选项</span>
+                    <div class="info-r backup-for" style="margin-bottom: 0;">
+                        <div class="box-group to-site" bt-event-click="checkboxLogs">
+                            <input name="backup_website" type="checkbox" style="display:none;">
+                            <div class="bt_checkbox_groups"></div>
+                            <span class="storage_checkbox_title">网站日志</span>
+                        </div>
+                        <div class="box-group" bt-event-click="checkboxLogs">
+                            <input name="backup_mysql" type="checkbox" style="display:none;">
+                            <div class="bt_checkbox_groups"></div>
+                            <span class="storage_checkbox_title">mysql日志</span>
+                        </div>
+                        <div class="box-group" bt-event-click="checkboxLogs">
+                            <input name="backup_secure" type="checkbox" style="display:none;">
+                            <div class="bt_checkbox_groups"></div>
+                            <span class="storage_checkbox_title">登录日志</span>
+                        </div>
+                        <div class="box-group" bt-event-click="checkboxLogs">
+                            <input name="backup_messages" type="checkbox" style="display:none;">
+                            <div class="bt_checkbox_groups"></div>
+                            <span class="storage_checkbox_title">系统日志</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="line select_sites" style="padding-bottom: 0;">
+                    <span class="tname">选择网站</span>
+                    <div class="info-r" style="margin-bottom: 0;">
+                        <div class="divtable">
+                            <div id="select-menu" class="bt-backup-select-button"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="line">
+                    <span class="tname" style="display: inline-block;">备份到</span>
+                    <div class="info-r storage-checkbox-list" style="display: inline-block;max-width: 90%;"></div>
+                    <div class="tips" style="margin-left: 75px;color: #888;">如需增加备份存储方式，可查看【<a href="javascript:;" class="btlink" bt-event-click="returnBackupConfig">备份存储】</a>，支持FTP、阿里云OSS、腾讯云OSS等存储备份。</div>
+                </div>
+                <div class="line"><span class="tname">执行时间</span>
+                    <div class="info-r">
+                        <div class="box-group">
+                            <div class="divtable">
+                                <div id="time-menu" class="bt-backup-select-button"></div>
+                            </div>
+                        </div>
+                        <div class="box-group select-week mask-time active">
+                            <div class="divtable">
+                                <div id="week-menu" class="bt-backup-select-button"></div>
+                            </div>
+                        </div>
+                        <div class="box-group select-day mask-time" style="font-size: 0;">
+                            <div class="fieldInput"><input type="number" maxlength="2" max="31" min="0" name="where1" autocomplete="off" class="bt-input-text" style="font-size: 13px;" value="5"></div>
+                            <div class="fieldName" style="font-size: 13px;">天</div>
+                        </div>
+                        <div class="box-group select-hour mask-time active" style="font-size: 0;">
+                            <div class="fieldInput"><input type="number" maxlength="2" max="23" min="0" name="where_hour" autocomplete="off" class="bt-input-text" style="font-size: 13px;"></div>
+                            <div class="fieldName" style="font-size: 13px;">小时</div>
+                        </div>
+                        <div class="box-group select-minute mask-time active" style="font-size: 0;">
+                            <div class="fieldInput">
+                                <input type="number" maxlength="2" max="59" min="0" name="where_minute" autocomplete="off" class="bt-input-text" style="font-size: 13px;">
+                            </div>
+                            <div class="fieldName" style="font-size: 13px;">分钟</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="line">
+                    <span class="tname">保留最新</span>
+                    <div class="info-r">
+                        <input name="save" class="bt-input-text mr5" autocomplete="off" type="text" value="180" style="width: 70px;" placeholder="保留多少天日志">份
+                    </div>
+                </div>
+                <button class="btn btn-success btn-sm" bt-event-click="backupLogs" style="margin-left: 90px;margin-top: 10px;" type="button">保存</button>
+            </form>
+            <ul class="help-info-text c7">
+                <li>每天对网站日志，数据库日志，登录日志和系统日志进行切割并上传到指定的云存储</li>
+                <li>根据网络安全法第二十一条规定，网络日志应留存不少于六个月</li>
+                <li>网站日志保存在/enterprise_backup/log/website目录</li>
+                <li>数据库日志保存在/enterprise_backup/log/mysql目录</li>
+                <li>登录日志保存在/enterprise_backup/log/secure目录</li>
+                <li>系统日志保存在/enterprise_backup/log/messages目录</li>
+            </ul>
+		</div>
+		<div class="bt-w-item">
+		 	<button class="btn btn-success btn-sm" bt-event-click="inspectConfig" style="margin-bottom: 10px;">重新获取配置</button>
+			<div id="cloudConfig" style="padding: 10px 0;"></div>
+		</div>
+		<div class="bt-w-item">
+			<button class="btn btn-success  btn-sm mr10" bt-event-click="exportSqlData">导出记录</button>
+			<button class="btn btn-default  btn-sm" bt-event-click="importSqlData">上传文件</button>
+			<div id="sqlDataTable" class="divtable" style="width: 100%;margin-top: 15px;"></div>
+		</div>
+	</div>
+</div>
+<script type="text/html" id="set_backup_view">
+	<div class="bt-form pd20" id="backup_from">
+		<%if(this.backupContent){%>
+		<div class="line"><span class="tname">选择数据库</span>
+			<div class="info-r">
+				<div class="mysql_content_list">
+					<div class="mysql_checkbox_group" bt-event-click="checkboxMysql"
+					     bt-event-type="active_all"><input name="*" type="checkbox" style="display: none;">
+						<div class="bt_checkbox_groups"></div>
+						<span class="mysql_checkbox_title">全部选中</span></div>
+					<ul class="mysql_checkbox_list">
+						<% for(var item in this.mysqlDataList){ %>
+						<li>
+							<div class="mysql_checkbox_group" bt-event-click="checkboxMysql" bt-event-type="active">
+								<span class="glyphicon glyphicon-menu-right" style="display:none" aria-hidden="true" bt-event-click="checkboxMysql"
+								      bt-event-type="fold"></span>
+								<input name="<% this.mysqlDataList[item].name %>" type="checkbox" data-type="library" style="display: none;" <% this.form.database== this.mysqlDataList[item].name?'checked':'' %>>
+								<div class="bt_checkbox_groups <% this.form.database == this.mysqlDataList[item].name ?'active':''%>"></div>
+								<span class="mysql_checkbox_title"><% this.mysqlDataList[item].name %><i style="color:#20a53a;"><% this.mysqlDataList[item].checked?'【已备份】':'' %></i></span></div>
+						</li>
+						<%}%>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<%}else{%>
+		<div class="line">
+			<span class="tname">选择目录</span>
+			<div class="info-r">
+				<input name="path" class="bt-input-text mr5" id="backup_path" autocomplete="off" type="text"
+				       style="width:350px;height:32px;padding-left:10px;outline: none;" value="<% this.form.path %>"
+				       bt-event-focus="focusInputClear">
+				<span class="glyphicon glyphicon-folder-open open_path_icon" aria-hidden="true" placeholder=""
+				      bt-event-click="selectFileDirectory"></span>
+			</div>
+		</div>
+		<div class="line">
+			<span class="tname">排除规则</span>
+			<div class="info-r">
+								<textarea name="exclude" class="bt-input-text mr5" type="text" bt-event-focus="focusInputTips"
+								          placeholder='示例: *.log"、"conf/ftp.conf",过滤掉某种文件类型，指定文件或者目录，目录不能以/结尾，以英文字符","或换行分割参数'
+								          style="width:350px; height:120px;line-height: 22px;font-size:13px;padding: 10px;" value="">
+										<%JSON.parse(this.form.exclude).join(',')%>
+								</textarea>
+			</div>
+		</div>
+		<%}%>
+		<form class="backupForm"><input type="text" name="id" value="<% this.form.id || '' %>" style="display:none">
+			<div class="full_form">
+				<div class="line"><span class="tname">全量备份</span>
+					<div class="info-r ">
+						<div class="tips">完全备份当前选择的数据，建议全量备份选择每周进行备份，如果存储空间大，可以每天进行备份。</div>
+					</div>
+				</div>
+				<div class="line"><span class="tname">全量执行周期</span>
+					<div class="info-r">
+						<div class="box-group backup_type_select">
+							<select id="full_backup_type" name="full_backup_type" class="sl-s-info" bt-event-change="cutBackupType">
+								<% for(var i=0;i <this.typeList.length ;i++){ %>
+								<option value="<% this.typeList[i][1] %>"
+								<%this.typeList[i][1]==this.form.full_backup_type?"selected":""%><%(this.typeList[i][1]=="hour"?"disabled":"")%>><%this.typeList[i][0]%></option>
+								<%}%>
+							</select>
+						</div>
+						<div class="box-group backup_week_select"
+						     style="<% this.form.full_backup_type == 'day'?'display:none':'' %> ">
+							<select id="full_backup_week" name="full_backup_week" class="sl-s-info">
+								<% for(var i=0;i
+								<this.weekList.length ;i++){ %>
+									<option value="<% this.weekList[i][1] %>"
+									<%(this.weekList[i][1]==this.form.full_backup_week?"selected":"")%>><%this.weekList[i][0]%></option>
+									<%}%>
+							</select>
+						</div>
+						<div class="box-group backup_hour_input">
+							<div class="fieldInput">
+								<input type="number" maxlength="2" max="23" min="0" name="full_backup_hour"
+								       value="<% this.form.full_backup_hour %>" autocomplete="off" class="bt-input-text"
+								       bt-event-focus="focusInputClear"/>
+							</div>
+							<div class="fieldName">小时</div>
+						</div>
+						<div class="box-group backup_minute_input">
+							<div class="fieldInput">
+								<input type="number" maxlength="2" max="59" min="0" name="full_backup_minute"
+								       value="<% this.form.full_backup_minute %>" autocomplete="off" class="bt-input-text"
+								       bt-event-focus="focusInputClear"/>
+							</div>
+							<div class="fieldName">分钟</div>
+						</div>
+					</div>
+				</div>
+				<div class="line">
+					<span class="tname">全量保留最新</span>
+					<div class="info-r">
+						<div class="box-group backup_save_input">
+							<div class="fieldInput">
+								<input type="number" maxlength="3" max="100" min="1" name="full_backup_save"
+								       value="<% this.form.full_backup_save %>" autocomplete="off" class="bt-input-text"
+								       bt-event-focus="focusInputClear"/>
+							</div>
+							<div class="fieldName">份</div>
+						</div><!--<div class="inline-tips">全量备份保留最新的多少份备份数据，多余的备份会自动清理。</div>-->
+					</div>
+				</div>
+            </div>
+			<div class="inc_form">
+				<div class="line"><span class="tname">增量备份</span>
+					<div class="info-r ">
+						<div class="index-item">
+                            <input class="btswitch btswitch-ios" id="inc_form_opt" type="checkbox" <%this.inc_backup_need=='1'?'checked':''%>>
+                            <label class="btswitch-btn" for="inc_form_opt" bt-event-click="setIncForm"></label>
+                        </div>
+					</div>
+				</div>
+				<div class="line toggle" <%this.inc_backup_need=='1'?'':'style="display:none;"'%>><span class="tname">增量执行周期</span>
+					<div class="info-r">
+						<div class="box-group backup_type_select">
+							<select id="inc_backup_type" name="inc_backup_type" class="sl-s-info" bt-event-change="cutBackupType">
+								<%for(var i=0;i
+								<this.typeList.length ;i++){%>
+									<option value="<% this.typeList[i][1] %>"
+									<%this.typeList[i][1]==this.form.inc_backup_type?'selected':''%>
+									<%this.typeList[i][1]=='week'?'disabled':''%>><%this.typeList[i][0]%></option>
+									<%}%>
+							</select>
+						</div>
+						<div class="box-group backup_hour_input"
+						     style="<% this.form.inc_backup_type == 'hour'?'display:none':'' %>">
+							<div class="fieldInput">
+								<input type="number" maxlength="2" max="23" min="0" name="inc_backup_hour"
+								       value="<% this.form.inc_backup_hour %>" autocomplete="off" class="bt-input-text"
+								       bt-event-focus="focusInputClear"/>
+							</div>
+							<div class="fieldName">小时</div>
+						</div>
+						<div class="box-group backup_minute_input">
+							<div class="fieldInput">
+								<input type="number" maxlength="2" max="59" min="0" name="inc_backup_minute"
+								       value="<% this.form.inc_backup_minute %>" autocomplete="off" class="bt-input-text"
+								       bt-event-focus="focusInputClear"/>
+							</div>
+							<div class="fieldName">分钟</div>
+						</div>
+					</div>
+				</div>
+				<div class="line toggle" <%this.inc_backup_need=='1'?'':'style="display:none;"'%>><span class="tname">增量保留最新</span>
+					<div class="info-r">
+						<div class="box-group backup_save_input">
+							<div class="fieldInput"><input type="number" maxlength="3" max="100" min="1" name="inc_backup_save"
+							                               value="<% this.form.inc_backup_save %>" autocomplete="off"
+							                               class="bt-input-text" bt-event-focus="focusInputClear"/></div>
+							<div class="fieldName">份</div>
+						</div>
+					</div>
+                </div>
+                <div class="line" style="margin-top: -15px;">
+					<div class="info-r">
+						<div class="tips">仅备份基于全量备份新增的数据，建议增量备份选择每天进行备份，如果存储空间大，可以每小时进行备份。</div>
+					</div>
+				</div>
+			</div>
+			<div class="line backupStorageList" id="backup"><span class="tname">备份到</span>
+				<div class="info-r">
+					<%for(var type in this.backupCloud){%>
+    					 <%if(this.backupCloud[type].status){%>
+        					 <div class="box-group" bt-event-click="checkboxBackup">
+        						 <input name="upload_<% type %>" type="checkbox" style="display:none;" <%this.form['upload_'+type]==1?'checked':''%> <%this.form.id == undefined?(type == 'local'?'checked':''):'' %> >
+        						 <div class="bt_checkbox_groups <% this.form['upload_'+ type ] == 1 ?'active':'' %> <%  this.form.id == undefined?(type == 'local'?'active':''):''   %>" ></div>
+        						 <span class="storage_checkbox_title"><% this.backupCloud[type].name %></span>
+        					 </div>
+    					 <%}%>
+					<%}%>
+				 <div class="tips">如需增加备份存储方式，可查看【<a href="javascript:;" class="btlink" bt-event-click="returnBackupConfig">备份存储】</a>，支持FTP、阿里云OSS、腾讯云OSS等存储备份。
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+</script>
+<script type="text/javascript" src="/static/js/bt_upload.js?version=7.5.17"></script>
+<script type="text/html" id="set_cloud_view">
+	<form id="cloud_from" action="#" style="padding:15px;">
+		<% for(var i=0;i<this.length;i++){ %>
+			 <% if(this[i]['name'] != 'loca_disk_info'){ %>
+				 <div class="line"><span class="tname"><%this[i]['title']%></span>
+					 <div class="info-r"><input name="<% this[i]['name'] %>" <% this[i]['name'] == 'local_disk_path'?'disabled':'' %> class="bt-input-text mr5" autocomplete="off" <% this[i]['name'] == 'bucket_path' ?'disabled':'' %>  type="text" value="<% this[i]['val'] %>">
+						 <div class="tips"><% this[i]['tips'] %></div>
+					 </div>
+				 </div>
+			 <% }else{ %>
+	 				<div class="line"><span class="tname"><%this[i]['title']%></span>
+						<div class="info-r" style="height: 32px;line-height: 32px;font-size: 13px;"><% this[i]['val'].free %></div>
+					</div>
+	 			<% } %>
+		<%}%>
+	</form>
+</script>
+<!--<ul class="mysql_checkbox_find_list" style="display: none;">-->
+<!--	<% for(var j=0;j-->
+<!--	<this.mysqlDataList-->
+<!--	[name].length;j++){ %>-->
+<!--	<li>-->
+<!--		<div class="mysql_checkbox_group" bt-event-click="checkboxMysql" bt-event-type="active">-->
+<!--			<input name="<% name +'.'+ this.mysqlDataList[name][j] %>" data-type="surface" type="checkbox"-->
+<!--			       style="display:none;" <% this.form.database==name?'checked':'' %> <%-->
+<!--			this.form.database==(name+'.'+this.mysqlDataList[name][j])?'checked':'' %>>-->
+<!--			<div class="bt_checkbox_groups <% this.form.database == name ?'active':''%> <% this.form.database == (name +'.'+ this.mysqlDataList[name][j]) ?'active':'' %>"></div>-->
+<!--			<span class="mysql_checkbox_title"><% this.mysqlDataList[name][j] %><i>【表】</i></span>-->
+<!--		</div>-->
+<!--	</li>-->
+<!--	<%}%>-->
+<!--</ul>-->
+<script type="text/javascript">
+    var enterprise_backup = {
+        editView: 0,
+        pluginName: 'enterprise_backup',
+        cloud_backup_path:'/enterprise_backup',
+        backupConfig: {
+            mysqlDataList: {},
+            notEdit: true,
+            backupContent: true, //true表示为数据库,false为目录
+            editViewBtn: '添加数据库备份',
+            editAjax: 'add_mysql_backup_setting', //操作方法
+            backupStorage: true, //当前是否存在备份存储
+            backupCloud: {
+                ftp: {name: 'FTP', status: true},
+                alioss: {name: '阿里云OSS', status: true},
+                txcos: {name: '腾讯云OSS', status: true},
+                qiniu: {name: '七牛云存储', status: true},
+                aws: {name: '亚马逊S3云存储', status: true}
+            },
+            typeList: [['每周', 'week'], ['每天', 'day'], ['每小时', 'hour']],
+            weekList: [['周一', 1], ['周二', 2], ['周三', 3], ['周四', 4], ['周五', 5], ['周六', 6], ['周日', 0]],
+            backupType: [['全量', 'full'], ['增量', 'inc']],
+            form: {
+                database: '',
+                path: '/www/wwwroot/',
+                exclude: "[]",
+                full_backup_type: 'week',
+                full_backup_week: 1,
+                full_backup_hour: 1,
+                full_backup_minute: 30,
+                full_backup_save: 10,
+                inc_backup_type: 'day',
+                inc_backup_hour: 1,
+                inc_backup_minute: 30,
+                inc_backup_save: 10,
+                upload_local: 0,
+                upload_ftp: 0,
+                upload_alioss: 0,
+                upload_txcos: 0,
+                upload_qiniu: 0,
+                upload_aws: 0
+            },
+            inc_backup_need: 1
+        },
+        recoveryConfig: {
+            editId: '',
+            editEl: '',
+            editAjax: 'add_mysql_backup_setting', //操作方法
+            editType: true
+        },
+        cloudConifg: {
+            local: [{name: 'local_disk_path', title: '文件路径', val: ''}, {
+                name: 'loca_disk_info',
+                title: '可用存储空间',
+                val: ''
+            }],
+            ftp: [{name: 'ftp_host', title: 'Host', tips: 'FTP服务器地址,包含FTP端口,例：192.168.0.1:21', val: ''}, {
+                name: 'ftp_user',
+                title: '用户名',
+                tips: '指定FTP用户名',
+                val: ''
+            }, {name: 'ftp_pass', title: '密码', tips: '指定FTP密码', val: ''}, {
+                name: 'ftp_path',
+                title: '存储位置',
+                tips: '文件保存路径',
+                val: this.cloud_backup_path
+            }],
+            alioss: [{name: 'access_key', title: 'AccessKeyId', tips: '阿里云的AccessKeyId', val: ''}, {
+                name: 'secret_key',
+                title: 'AccessKeySecret',
+                tips: '阿里云的AccessKeySecret',
+                val: ''
+            }, {name: 'bucket_name', title: 'Bucket', tips: '阿里云OSS中您创建的Bucket名称', val: ''}, {
+                name: 'bucket_domain',
+                title: '外链域名',
+                tips: '阿里云OSS外链域名，不包括Bucket名',
+                val: ''
+            }, {name: 'bucket_path', title: '保存路径', tips: '文件保存路径', val:this.cloud_backup_path}],
+            txcos: [{name: 'secret_id', title: 'secret_id', tips: '腾讯云COS secret_id', val: ''}, {
+                name: 'secret_key',
+                title: 'secret_key',
+                tips: '腾讯云COS secret_key',
+                val: ''
+            }, {name: 'region', title: 'region', tips: '腾讯云COS region名称', val: ''}, {
+                name: 'bucket',
+                title: 'Bucket',
+                tips: '腾讯云COS Bucket名称',
+                val: ''
+            }, {name: 'bucket_path', title: '保存路径', tips: '文件保存路径', val:this.cloud_backup_path}],
+			qiniu: [{name: 'access_key', title: 'AccessKeyId', tips: '七牛云存储的AccessKeyId', val: ''}, {
+                name: 'secret_key',
+                title: 'AccessKeySecret',
+                tips: '七牛云存储的AccessKeySecret',
+                val: ''
+            }, {name: 'bucket_name', title: 'Bucket', tips: '七牛云存储中您创建的Bucket名称', val: ''}, {
+                name: 'bucket_domain',
+                title: '外链域名',
+                tips: '七牛云存储外链域名，不包括Bucket名',
+                val: ''
+            }, {name: 'bucket_path', title: '保存路径', tips: '文件保存路径', val: this.cloud_backup_path}],
+			aws: [{name: 'secret_id', title: 'secret_id', tips: '亚马逊S3 secret_id', val: ''}, {
+                name: 'secret_key',
+                title: 'secret_key',
+                tips: '亚马逊S3 secret_key',
+                val: ''
+            }, {
+                name: 'bucket',
+                title: 'Bucket',
+                tips: '亚马逊S3 Bucket名称',
+                val: ''
+            }, {name: 'bucket_path', title: '保存路径', tips: '文件保存路径', val:this.cloud_backup_path}]
+        },
+        ajaxList: {
+            'modify_mysql_backup_setting_status': '设置数据库备份任务状态',
+            'modify_path_backup_setting_status': '设置文件目录备份任务状态',
+            'get_soft_status': '检测备份软件环境配置',
+            'repair_version_suitable': '尝试修复环境中',
+            'open_innodb_file_per_table': '开启innodb_file_per_table设置中',
+            'set_ftp_config': '设置FTP备份配置',
+            'get_ftp_config': '获取FTP备份配置',
+            'set_alioss_config': '设置阿里云OSS备份配置',
+            'get_alioss_config': '获取阿里云OSS备份配置',
+            'set_txcos_config': '设置腾讯云OSS备份配置',
+            'get_txcos_config': '获取腾讯云OSS备份配置',
+			'set_qiniu_config': '设置七牛云存储备份配置',
+            'get_qiniu_config': '获取七牛云存储备份配置',
+			'set_aws_config': '设置亚马逊S3云存储备份配置',
+            'get_aws_config': '获取亚马逊S3云存储备份配置',
+            'set_local_config': '设置本地备份地址',
+            'get_local_config': '获取本地备份地址',
+            'get_databases': '获取数据库列表',
+            'get_available_cloud': '获取云存储服务状态',
+            'batch_add_mysql_backup_setting': '添加数据库备份任务',
+            'get_mysql_backup_setting_list': '获取数据库备份列表',
+            'modify_mysql_backup_setting': '修改数据库备份任务',
+            'delete_mysql_backup_setting': '删除数据库备份任务',
+            'add_path_backup_setting': '添加文件目录备份任务',
+            'get_path_backup_setting_list': '获取文件目录备份列表',
+            'modify_path_backup_setting': '编辑文件目录备份任务',
+            'delete_path_backup_setting': '删除文件目录备份任务',
+            'get_path_full_backup_list': '获取文件目录全量备份列表',
+            'path_full_backup_restore': '恢复文件目录全量备份',
+            'delete_path_full_backup_api': '删除文件目录全量备份',
+			'get_path_inc_backup_list': '获取文件目录增量备份列表',
+            'path_inc_backup_restore': '恢复文件目录增量备份',
+            'delete_path_inc_backup_api': '删除文件目录增量备份',
+            'get_mysql_full_backup_list': '获取数据库全量备份列表',
+            'mysql_full_backup_restore': '恢复数据库全量备份',
+            'delete_mysql_full_backup_api': '删除数据库全量备份',
+            'get_mysql_inc_backup_list': '获取数据库增量备份列表',
+            'mysql_inc_backup_restore': '恢复数据库增量备份',
+            'delete_mysql_inc_backup_api': '删除数据库增量备份',
+            'get_mysql_backup_logs': '获取数据库备份日志',
+            'get_path_backup_logs': '获取文件目录备份日志',
+            'start_mysql_backup_task': '执行数据库备份任务',
+            'start_path_backup_task': '执行文件目录备份任务',
+            'export_sql_data': '导出备份记录',
+            'import_sql_data': '导入备份记录',
+            'sql_data': '获取备份文件',
+            'delete_sql_data': '删除备份文件',
+            'set_log_backup_conf': '设置日志备份相关配置',
+            'get_log_backup_conf': '获取日志备份相关配置',
+            'open_log_backup_task': '开启日志备份任务',
+            'close_log_backup_task': '关闭日志备份任务',
+            'start_log_backup_task': '执行日志备份任务',
+        },
+        // 初始化
+        init: function () {
+            var that = this;
+            this.setAttr('.layui-layer-page', 'width', 1000);
+            if (bt.get_cookie('enterpriseSoft') == null) {
+                bt.set_cookie('enterpriseSoft', 1);
+            }
+            if (bt.get_cookie('enterpriseCloud') == null) {
+                bt.set_cookie('enterpriseCloud', 1);
+            }
+            this.getPluginScience(function () {
+                that.getCloudList(function(){
+                    that.createDatabaseTabel(); // 获取数据库任务列表
+                });
+            });
+            this.methods = this.methods();
+            this.event();
+
+        },
+        // 事件方法1
+        methods: function () {
+            var that = this;
+            return {
+                focusInputTips: function (ev) {
+                    var _this = $(this), tips = _this.attr('placeholder');
+                    _this.attr('placeholder', '');
+                    var loadT = layer.tips(tips, _this, {
+                        tips: [1, '#20a53a'],
+                        time: 0,
+                        area: _this[0].clientWidth + 'px'
+                    });
+                    $(this).one('blur', function () {
+                        $(this).attr('placeholder', tips);
+                        layer.close(loadT);
+                    });
+                },
+                // tab切换绑定事件-ok
+                tabCut: function (ev) {
+                    var _index = $(this).index();
+                    if (typeof ev != "undefined") {
+                        $(this).addClass('bgw').siblings().removeClass('bgw');
+                    } else {
+                        $('.bt-w-menu span').eq(ev).addClass('bgw').siblings().removeClass('bgw');
+                    }
+                    $('.bt-w-con .bt-w-item').eq(_index).addClass('active').siblings().removeClass('active');
+                    switch (_index) {
+                        case 0:
+                            that.createDatabaseTabel();
+                            break;
+                        case 1:
+                            that.createPathTabel();
+                            break;
+                        case 2:
+                            that.getLogsBackup();
+                            break;
+                        case 3:
+                            that.getCloudList();
+                            break;
+                        case 4:
+                            that.createSqlDataTable();
+                            break;
+                    }
+                },
+                // 切换备份恢复列表-ok
+                tabCutRecovery: function (ev) {
+                    var _index = $(this).index();
+                    if (typeof ev == "number") _index = ev;
+                    $('#RecoveryView .tab span').eq(_index).removeClass('active').addClass('active').siblings().removeClass('active');
+                    $('#RecoveryView .tabContent>div').eq(_index).show().siblings().hide();
+                    that.recoveryTypeInfo(!_index);
+                    that.createRecoveryBackupTable();
+                },
+                // 切换备份日志
+                tabCutLogs: function (ev) {
+                    var _index = $(this).index();
+                    $('#logsView .tab span').eq(_index).removeClass('active').addClass('active').siblings().removeClass('active');
+                    $('#logsView .tabContent>div').eq(_index).show().siblings().hide();
+                    $('#logsFullView').scrollTop($('#logsFullView')[0].scrollHeight);
+                    $('#logsIncView').scrollTop($('#logsIncView')[0].scrollHeight);
+                },
+                // 跳转备份存储配置页面-ok
+                returnBackupConfig: function (ev) {
+                    $('.bt-w-menu span:eq(3)').click();
+                    layer.close(that.editView);
+                    ev.stopPropagation();
+                },
+                // 数据库选择事件-ok
+                checkboxMysql: function (ev) {
+                    var _type = $(this).attr('bt-event-type'), _checkbox = '.bt_checkbox_groups';
+                    switch (_type) {
+                        case 'active_all'://选中全部
+                            var thatActive = $(this).find(_checkbox), thatList = $(this).next();
+                            if (thatActive.hasClass('active')) {
+                                thatActive.removeClass('active').prev().prop('checked', false);
+                                thatList.find(_checkbox).removeClass('active').prev().prop('checked', false);
+                            } else {
+                                thatActive.addClass('active').prev().prop('checked', true);
+                                thatList.find(_checkbox).addClass('active').prev().prop('checked', true);
+                            }
+                            break;
+                        case 'active': //激活选中和取消
+                            var thatActive = $(this).find(_checkbox), thatList = $(this).next();
+                            if (thatActive.hasClass('active')) {
+                                thatActive.removeClass('active').prev().prop('checked', false);
+                                $('.mysql_content_list>.mysql_checkbox_group input').prop('checked', false).next().removeClass('active');
+                                if (thatList.length == 1) {
+                                    thatList.find(_checkbox).removeClass('active').prev().prop('checked', false);
+                                } else {
+                                    var nodeLength = $(this).parent().siblings().length + 1,
+                                        nodeList = $(this).parent().parent();
+                                    if (nodeList.find('.bt_checkbox_groups.active').length != nodeLength) {
+                                        nodeList.prev().find(_checkbox).removeClass('active').prev().prop('checked', false);
+                                    }
+                                }
+                            } else {
+                                thatActive.addClass('active').prev().prop('checked', true);
+                                if (thatList.length == 1) {
+                                    thatList.find(_checkbox).addClass('active').prev().prop('checked', true);
+                                } else {
+                                    var nodeLength = $(this).parent().siblings().length + 1,
+                                        nodeList = $(this).parent().parent();
+                                    if (nodeList.find('.bt_checkbox_groups.active').length == nodeLength) {
+                                        nodeList.prev().find(_checkbox).addClass('active').prev().prop('checked', true);
+                                    }
+                                }
+                            }
+                            break;
+                        case 'fold': //折叠数据库列表
+                            if ($(this).hasClass('glyphicon-menu-down')) {
+                                $(this).removeClass('glyphicon-menu-down').addClass('glyphicon-menu-right').parent().next().hide();
+                            } else {
+                                $(this).removeClass('glyphicon-menu-rigth').addClass('glyphicon-menu-down').parent().next().show();
+                            }
+                            break;
+                    }
+                    $('.mysql_content_list').removeAttr('style');
+                    ev.stopPropagation();
+                },
+                // 切换备份执行类型事件-ok
+                cutBackupType: function (ev) {
+                    var active = $(this).find('option:selected'), type = active.val(),
+                        typeCut = $(this).parent().parent();
+                    switch (type) {
+                        case 'week':
+                            typeCut.find('.backup_minute_input').siblings().show();
+                            break;
+                        case 'day':
+                            typeCut.find('.backup_minute_input').siblings().show();
+                            typeCut.find('.backup_week_select').hide();
+                            break;
+                        case 'hour':
+                            typeCut.find('.backup_minute_input').siblings().hide();
+                            break;
+                    }
+                    // typeCut.next('.backup_hour_input input').val('1');
+                    // typeCut.next('.backup_minute_input input').val('30');
+                    typeCut.find('.backup_type_select').show();
+                },
+                // 选择备份存储-ok
+                checkboxBackup: function (ev) {
+                    var active = $(this).find('input').prop('checked'), checkbox = $(this).find('.bt_checkbox_groups')
+                    active ? checkbox.removeClass('active') : checkbox.addClass('active');
+                    $(this).find('input').prop('checked', !active);
+                    $('.backupStorageList .bt_checkbox_groups').removeAttr('style');
+                },
+                // 选择日志备份-ok
+                checkboxLogs: function (ev) {
+                    var active = $(this).find('input').prop('checked'), checkbox = $(this).find('.bt_checkbox_groups');
+                    active ? checkbox.removeClass('active') : checkbox.addClass('active');
+                    console.log($(this).hasClass('to-site'))
+                    if ($(this).hasClass('to-site')) {
+                        $('.logs-backup .select_sites').toggle();
+                    }
+                    $(this).find('input').prop('checked', !active);
+                    $('.logs-backup .bt_checkbox_groups').removeAttr('style');
+                },
+                // 获取焦点，就清理错误提示-ok
+                focusInputClear: function (ev) {
+                    $(this).parent().removeAttr('style');
+                },
+                // 选择目录-ok
+                selectFileDirectory: function (ev) {
+                    bt.select_path('backup_path');
+                },
+                // 添加任务-ok
+                addBackup: function (ev) {
+                    that.backupTypeInfo(true);
+                    that.createBackupView(that.backupConfig);
+                },
+                //导出备份记录
+                exportSqlData: function (ev) {
+                    that.ajaxTask({method: 'export_sql_data', success: function (rdata) {
+                        that.createSqlDataTable();
+                        layer.msg(rdata.msg, { icon: rdata.status ? 1 : 2 });
+                    }});
+                },
+                //导入备份记录
+                importSqlData: function (ev) {
+                    bt_upload_file.open('/www/server/panel/plugin/enterprise_backup/data', null, null, function () {
+                        that.createSqlDataTable();
+                    });
+                },
+                //导入备份记录
+                useSqlData: function (row, index) {
+                    var fileName = '/www/server/panel/plugin/enterprise_backup/data/'+ row.name;
+                    layer.confirm('确认导入【'+row.name+'】该备份记录？', { title: '导入记录', closeBtn: 2, icon: 3 }, function () {
+                        that.ajaxTask({method: 'import_sql_data', data: {file_path:fileName}, success: function (rdata) {
+                            layer.msg(rdata.msg, { icon: rdata.status ? 1 : 2 });
+                        }});
+                    });
+                },
+                //下载备份记录
+                downSqlData: function (row, index) {
+                    window.open('/download?filename=' + encodeURIComponent('/www/server/panel/plugin/enterprise_backup/data/'+ row.name));
+                },
+                //删除备份记录
+                delSqlData: function (row, index) {
+                    var fileName = '/www/server/panel/plugin/enterprise_backup/data/'+ row.name;
+                    layer.confirm(lan.get('recycle_bin_confirm', [fileName]), { title: lan.files.del_file, closeBtn: 2, icon: 3 }, function (index) {
+                        that.ajaxTask({method: 'delete_sql_data', url: '/files?action=DeleteFile', data: {path:fileName}, success: function (rdata) {
+                            that.createSqlDataTable();
+                            layer.msg(rdata.msg, { icon: rdata.status ? 1 : 2 });
+                        }});
+                    });
+                },
+                // 编辑状态
+                modifyBackupStatus: function (row, index) {
+                    var type = that.backupConfig.backupContent;
+                    layer.confirm('是否' + (row.status ? '关闭' : '开启') + (type ? '数据库' : '文件目录') + '备份任务[ ' + (type ? row.database : row.path) + ' ]，是否继续？', {
+                        title: '设置' + (type ? '数据库' : '文件目录') + '备份任务状态',
+                        closeBtn: 2,
+                        icon: 0,
+                        area: '410px'
+                    }, function () {
+                        that.ajaxTask({
+                            method: type ? 'modify_mysql_backup_setting_status' : 'modify_path_backup_setting_status',
+                            data: {id: row.id, status: row.status ? 0 : 1},
+                            success: function (rdata) {
+                                that[type ? 'createDatabaseTabel' : 'createPathTabel'](function () {
+                                    layer.msg(rdata.msg, {icon: rdata.status ? 1 : 2});
+                                });
+                            }
+                        });
+                    });
+                },
+                // 编辑任务-ok
+                modifyBackup: function (row, index,ev) {
+                    var obj = {};
+                    that.backupTypeInfo(false);
+                    obj = JSON.parse(JSON.stringify(that.backupConfig));
+                    $.extend(obj.form, row);
+                    if(typeof ev.currentTarget.attributes['data-inc'].nodeValue !== "undefined"){
+                        obj.inc_backup_need = ev.currentTarget.attributes['data-inc'].nodeValue;
+                    }
+                    that.createBackupView(obj);
+                },
+                // 查看任务日志-ok
+                viewLogs: function (row, index) {
+                    that.createLogsView(row);
+                },
+                // 删除任务-ok
+                delBackup: function (row, index) {
+                    var config = {};
+                    if (that.backupConfig.backupContent) {
+                        config = {
+                            title: '删除数据库备份任务',
+                            content: '是否删除数据库/表 [<span style="color:red">' + row.database + '</span>] 备份任务？',
+                            method: 'delete_mysql_backup_setting',
+                            callback: that.createDatabaseTabel
+                        }
+                    } else {
+                        config = {
+                            title: '删除文件目录备份任务',
+                            content: '是否删除文件目录 [<span style="color:red">' + row.path + '</span>] 备份任务？',
+                            method: 'delete_path_backup_setting',
+                            callback: that.createPathTabel
+                        }
+                    }
+                    layer.confirm(config.content, {
+                        title: config.title,
+                        closeBtn: 2,
+                        icon: 0,
+                        area: '360px'
+                    }, function () {
+                        that.ajaxTask({
+                            method: config.method,
+                            data: {id: row.id},
+                            success: function (res) {
+                                config.callback.bind(that)(function () {
+                                    layer.msg(res.msg, {icon: res.status ? 1 : 2});
+                                });
+                            }
+                        });
+                    });
+                },
+                // 恢复备份视图-ok
+                recoveryBackup: function (row, index) {
+                    that.recoveryConfig.editId = row.id;
+                    that.createRecoveryView(row);
+                },
+                // 恢复备份-ok
+                recoveryFileBackup: function (row, index) {
+                    var type = that.backupConfig.backupContent,
+                        mode = that.recoveryConfig.editType,
+                        method = type ? (mode ? 'mysql_full_backup_restore' : 'mysql_inc_backup_restore') : (mode ? 'path_full_backup_restore' : 'path_inc_backup_restore'),
+                        output_method = type ? 'get_mysql_restore_output' : 'get_path_restore_output',
+                        output_logs_type = '恢复' + (type ? '数据库' : '文件目录'),
+                        _arry = [];
+                    if (typeof row.file_path != "undefined") {
+                        _arry = row.file_path.split('/');
+                    } else {
+                        _arry = row.inc_file_path.split('/');
+                    }
+                    layer.confirm('恢复' + (type ? '数据库' : '文件目录') + (mode ? '全量' : '增量') + '备份[ <span style="color:red;" >' + _arry[_arry.length - 1] + '</span> ]，是否继续？' + (mode ? '<span class="tips">全量备份恢复时间较长，请须知。</span>' : ''), {
+                        title: '恢复' + (type ? '数据库' : '文件目录') + (mode ? '全量' : '增量') + '备份',
+                        closeBtn: 2,
+                        icon: 0,
+                        area: '410px'
+                    }, function () {
+                        that.ajaxTask({
+                            method: method,
+                            data: {id: row.id},
+                            success: function (rdata) {
+                                layer.msg(rdata.msg, {icon: rdata.status ? 1 : 2, time: 1000});
+                            }
+                        });
+                        that.backup_output_logs('', output_logs_type, output_method);
+                    });
+                },
+                // 删除备份文件-ok
+                delFileBackup: function (row, index) {
+                    var type = that.backupConfig.backupContent,
+                        mode = that.recoveryConfig.editType,
+                        method = type ? (mode ? 'delete_mysql_full_backup_api' : 'delete_mysql_inc_backup_api') : (mode ? 'delete_path_full_backup_api' : 'delete_path_inc_backup_api'),
+                        _arry = [];
+                    if (typeof row.file_path != "undefined") {
+                        _arry = row.file_path.split('/');
+                    } else {
+                        _arry = row.inc_file_path.split('/');
+                    }
+                    layer.confirm('删除' + (type ? '数据库' : '文件目录') + (mode ? '全量' : '增量') + '备份[ <span style="color:red;" >' + _arry[_arry.length - 1] + '</span> ]，是否继续？', {
+                        title: '删除' + (type ? '数据库' : '文件目录') + (mode ? '全量' : '增量') + '备份',
+                        closeBtn: 2,
+                        icon: 0,
+                        area: '410px'
+                    }, function () {
+                        that.ajaxTask({
+                            method: method,
+                            data: {id: row.id},
+                            success: function (rdata) {
+                                that.recoveryTypeInfo(mode);
+                                that.createRecoveryBackupTable(function () {
+                                    layer.msg(rdata.msg, {icon: rdata.status ? 1 : 2});
+                                });
+                            }
+                        });
+                    });
+                },
+                // 下载备份文件-ok
+                downloadFileBackup: function (row, index) {
+                    that.createFileDownloadView(row);
+                },
+                // 设置存储配置
+                setCloudConfig: function (ev) {
+                    var type = $(this).attr('data-type');
+                    that.createCloudView({
+                        type: type,
+                        name: that.backupConfig.backupCloud[type].name,
+                        lineList: that.cloudConifg[type]
+                    });
+                },
+                // 打开关闭增量开关
+                setIncForm: function (ev) {
+                    var _type = $(this).siblings().prop('checked');
+                    $(".inc_form .toggle").toggle()
+                },
+                // 启动备份任务
+                startBackuptTask: function (row, index) {
+                    var type = that.backupConfig.backupContent,
+                    output_logs_type = '备份' + (type ? '数据库' : '文件目录'),
+                    output_method = type ? 'get_mysql_backup_output' : 'get_path_backup_output';
+                    layer.confirm('是否立即执行' + (type ? '数据库' : '文件目录') + '[' + (type ? row.database : row.path) + ']备份任务？', {
+                        title: '立即执行' + (type ? '数据库' : '文件目录') + '备份任务',
+                        closeBtn: 2,
+                        icon: 0,
+                        area: '380px'
+                    }, function () {
+                        that.ajaxTask({
+                            method: type ? 'start_mysql_backup_task' : 'start_path_backup_task',
+                            data: {id: row.id},
+                            success: function (res) {
+                                layer.msg(res.msg, {icon: res.status ? 1 : 2});
+                            }
+                        });
+                        that.backup_output_logs(row.id, output_logs_type, output_method);
+                    })
+                },
+                // 检查环境
+                inspectConfig: function () {
+                    bt.set_cookie('enterpriseCloud', 1);
+                    that.getCloudList();
+                },
+                // 备份日志
+                backupLogs: function () {
+                    var _data = {},
+                    logs_set = $(".logs-backup [type=checkbox]"),
+                    sites = $("#select-menu .picker-text-list").text();
+                    if($(".logs-backup [name=save]").val()==''){
+                        layer.msg('请输入保留最近多少天的日志', { icon: 2 });
+                        return false;
+                    }
+                    for (var i = 0; i < logs_set.length; i++) {
+                        _data[logs_set.eq(i).attr('name')] = logs_set.eq(i).prop('checked')?1:0;
+                    }
+                    _data.save = $(".logs-backup [name=save]").val();
+                    _data.save = parseInt(_data.save);
+                    if(_data.backup_website) _data.select_website = sites.replace(/\s/g, '');
+                    var time_type = $("#time-menu .select-list-item li.active").attr('data-attr');
+                    _data.type = time_type;
+                    switch(time_type){
+                        case 'day':
+                            _data.where_hour = $(".mask-time [name=where_hour]").val();
+                            _data.where_minute = $(".mask-time [name=where_minute]").val();
+                            break;
+                        case 'hour':
+                            _data.where_minute = $(".mask-time [name=where_minute]").val();
+                            break;
+                        case 'hour-n':
+                            _data.where1 = $(".mask-time [name=where_hour]").val();
+                            _data.where_minute = $(".mask-time [name=where_minute]").val();
+                            break;
+                        case 'minute-n':
+                            _data.where1 = $(".mask-time [name=where_minute]").val();
+                            break;
+                        case 'week':
+                            _data.where_week = $("#week-menu .select-list-item li.active").attr('data-attr');
+                            _data.where_hour = $(".mask-time [name=where_hour]").val();
+                            _data.where_minute = $(".mask-time [name=where_minute]").val();
+                            break;
+                        case 'day-n':
+                        case 'month':
+                            _data.where1 = $(".mask-time [name=where1]").val();
+                            _data.where_hour = $(".mask-time [name=where_hour]").val();
+                            _data.where_minute = $(".mask-time [name=where_minute]").val();
+                            break;
+                    }
+                    if (_data.where1) _data.where1 = parseInt(_data.where1);
+                    if (_data.where_hour) _data.where_hour = parseInt(_data.where_hour);
+                    if (_data.where_minute) _data.where_minute = parseInt(_data.where_minute);
+                    if (_data.where_week) _data.where_week = parseInt(_data.where_week);
+                    that.ajaxTask({
+                        method: 'set_log_backup_conf',
+                        data: _data,
+                        success: function (rdata) {
+                            layer.msg(rdata.msg, {icon: rdata.status ? 1 : 2});
+                            $("#log-backup").attr('data-status',true);
+                        }
+                    });
+                },
+                excudeBackup: function () {
+                    if(!$("#log-backup").attr('data-status')){
+                        layer.msg('请先开启日志备份功能', {icon: 2});
+                        return
+                    }
+                    layer.confirm('是否立即执行日志备份任务？', {
+                        title: '日志备份',
+                        closeBtn: 2,
+                        icon: 3,
+                        area: '380px'
+                    }, function () {
+                        that.ajaxTask({
+                            method: 'start_log_backup_task',
+                            success: function (res) {
+                                layer.msg(res.msg, {icon: res.status ? 1 : 2});
+                            }
+                        });
+                        that.backup_output_logs('', '执行日志备份', 'get_log_backup_output');
+                    });
+                },
+                checkBackupLogs: function () {
+                    that.ajaxTask({
+                        method: 'get_log_backup_logs',
+                        success: function (rdata) {
+                            layer.open({
+                                type: 1,
+                                area: '600px',
+                                title: '备份日志',
+                                closeBtn: 2,
+                                shift: 5,
+                                content: '<div id="logsView">' +
+                                    '<div class="tabContent">' +
+                                    '<pre id="logsFullView">' + rdata.msg + '</pre></div>' +
+                                    '</div>',
+                                success: function (layers, index) {
+                                    $('#logsFullView').scrollTop($('#logsFullView')[0].scrollHeight);
+                                }
+                            });
+                        }
+                    });
+                },
+                backupLogsStatus: function () {
+                    var logs_status = $("#log-backup").prop('checked'), _status = $("#log-backup").attr('data-status');
+                    if(_status == 'true' && logs_status) layer.confirm('确认关闭日志备份功能？', { title: '关闭日志备份', closeBtn: 2, icon: 3 }, function () {
+                        that.ajaxTask({method: 'close_log_backup_task', success: function (rdata) {
+                            layer.msg(rdata.msg, { icon: rdata.status ? 1 : 2 });
+                            $(".logs-backup").hide();
+                            $("#log-backup").attr('data-status',false);
+                        }});
+                    },function(){
+                        $("#log-backup").prop('checked',true);
+                    });
+                    if(_status == 'false') $(".logs-backup").toggle();
+                }
+            }
+        },
+        //实时显示过程
+        backup_output_logs: function (row_id, output_type,method) {
+            var that = this, data = {};
+            if(row_id != '' && row_id != undefined) data['id'] = row_id;
+            var layerT = layer.open({
+                type: 1,
+                area: '600px',
+                title: '正在' + output_type + '...',
+                closeBtn: 0,
+                content: '<div>' +
+                    '<div><pre class="backup_logs" style="height:450px"></pre></div></div>',
+            });
+            var show_output = setInterval(function(){
+            	$.post('/plugin?action=a&name=enterprise_backup&s=' + method, data,function(rdata){
+                	if(!rdata.status) {
+                		layer.close(layerT);
+                		window.clearInterval(show_output);
+                	}
+                	$('.backup_logs').html(rdata.msg);
+                	$('.backup_logs').scrollTop($('.backup_logs')[0].scrollHeight);
+            	})
+            }, 1000);
+        },
+        // 处理插件插件配置
+        handlePluginConfig: function (config) {
+            var that = this;
+            if (!config.is_suitable) { //修复插件版本
+                that.repaiVersionSuitable(function (res) {
+                    config.is_suitable = true;
+                    that.handlePluginConfig(config);
+                    bt.set_cookie('enterpriseSoft', 1);
+                });
+                return false;
+            }
+            if (config.innodb_file_per_table == 'OFF') {
+                layer.confirm('当前数据库innodb_file_per_table配置项未开启，是否开启!<div class="tips">注意事项:如果不开启配置，备份工具将无法正常使用，开启之前的表依然使用的是共享存储空间，如果要进行备份，要开启数据库innodb_file_per_table配置项之后，再使用mysqldump导出这些表的数据之后再导入来进行一次转化。</div>', {
+                    title: '开启数据库innodb_file_per_table配置项',
+                    icon: 0,
+                    area: '440px',
+                    closeBtn: 2,
+                    cancel: function () {
+                        layer.closeAll();
+                    }
+                }, function () {
+                    that.ajaxTask({
+                        method: 'open_innodb_file_per_table',
+                        success: function (rdata) {
+                            config.innodb_file_per_table = 'ON';
+                            bt.set_cookie('enterpriseSoft', 1);
+                            layer.msg(rdata.msg, {icon: rdata.status ? 1 : 2});
+                            that.handlePluginConfig(config);
+                        }
+                    });
+                }, function () {
+                    layer.closeAll();
+                });
+                return false;
+            }
+            if (config.local_path === false) {
+                layer.open({
+                    type: 1,
+                    title: '设置本地备份存储目录',
+                    area: '500px',
+                    closeBtn: 2,
+                    btn: ['保存', '取消'],
+                    content: '<div style="padding:20px 25px"><div class="line" id="backupPath"><span class="tname">选择目录</span><div class="info-r"><input name="path" class="bt-input-text mr5" id="backup_path" autocomplete="off" type="text" style="width:270px;height:32px;padding-left:10px;outline: none;" value="/www/backup/" bt-event-focus="focusInputClear"><span class="glyphicon glyphicon-folder-open open_path_icon" aria-hidden="true" placeholder="" bt-event-click="selectFileDirectory"></span></div><ul class="help-info-text c7" style="padding-left:25px"><li>请选择文件目录用于本地备份存储。如果不设置将无法使用该插件。</li><li>请确保文件备份存储有一定的存储空间，否则文件将无法备份。</li></ul></div></div>',
+                    success: function (layers, indexs) {
+                        that.event('#backupPath');
+                    },
+                    yes: function (indexs, layers) {
+                        var path = $('[name="path"]').val();
+                        if (path == '') {
+                            layer.msg('文件备份存储目录不能为空!', {icon: 2});
+                            return false;
+                        }
+                        that.ajaxTask({
+                            method: 'set_local_config',
+                            data: {path: path},
+                            success: function (rdata) {
+                                layer.close(indexs);
+                                bt.set_cookie('enterpriseSoft', 1);
+                                layer.msg(rdata.msg, {icon: rdata.status ? 1 : 2});
+                            }
+                        })
+                    },
+                    btn2: function () {
+                        layer.closeAll();
+                    },
+                    cancel: function () {
+                        layer.closeAll();
+                    }
+                })
+                return false;
+            }
+            return true;
+        },
+        // 获取插件服务配置
+        getPluginScience: function (callback) {
+            var that = this;
+            that.ajaxTask({
+                method: 'get_soft_status', //状态获取
+                data: {act: bt.get_cookie('enterpriseSoft')},
+                success: function (res) {
+                    bt.set_cookie('enterpriseSoft', 0);
+                    if (that.handlePluginConfig(res)) {
+                        if (callback) callback();
+                    }
+                }
+            });
+        },
+        // 修复插件和mysql版本
+        repaiVersionSuitable: function (callback) {
+            var that = this;
+            that.ajaxTask({
+                method: 'repair_version_suitable',
+                success: function (res) {
+                    if (callback) callback();
+                },
+                error: function (res) {
+                    layer.closeAll();
+                    layer.msg('修复失败,请联系管理员检查故障', {icon: 0});
+                }
+            })
+        },
+        // 获取存储列表
+        getCloudList: function (callback) {
+            var that = this;
+            that.ajaxTask({
+                method: 'get_available_cloud',
+                data: {act: bt.get_cookie('enterpriseCloud')},
+                success: function (res) {
+                    bt.set_cookie('enterpriseCloud', 0);
+                    that.backupConfig.backupCloud = res;
+                    var html = '';
+                    for (var item in res) {
+                        html += '<div class="cloud_list"><span class="cloud_title">' + res[item].name + '</span><span class="cloud_status ' + (res[item].status ? 'success' : 'error') + '">' + (res[item].status ? '配置成功' : '未配置或无效') + '</span><button class="cloud_btn" data-type="' + item + '" bt-event-click="setCloudConfig">编辑配置</button></div>';
+                    }
+                    $('#cloudConfig').html(html);
+                    that.event('#cloudConfig');
+                    if (callback) callback();
+                }
+            });
+        },
+        // 获取日志备份相关配置
+        getLogsBackup: function (callback) {
+            var that = this;
+            that.ajaxTask({
+                method: 'get_log_backup_conf',
+                success: function (res) {
+                    $("#log-backup").prop('checked',res.open).attr('data-status',res.open);
+                    if (!res.open) $(".logs-backup").hide();
+                    if (!res.backup_website) $(".select_sites").hide();
+                    that.setTimeType(res.type);
+                    var storage_list = '', _storage = that.backupConfig.backupCloud, choose_data = [], sites_list = [],time_data = [];
+                    for (var j in _storage) {
+                        var _name = "upload_"+j,
+                        _check = res[_name] ? 'checked' : '',
+                        _active = res[_name] ? 'active' : '';
+                        if (_storage[j].status) {
+                            storage_list += '<div class="box-group">\
+                                <input name="upload_'+j+'" type="checkbox" style="display:none;" '+_check+'>\
+                                <div class="bt_checkbox_groups '+_active+'"></div>\
+                                <span class="storage_checkbox_title">'+_storage[j].name+'</span>\
+                            </div>'
+                        }
+                    }
+                    var backup_type = $('.logs-backup .backup-for .box-group');
+                    for (var i = 0; i < backup_type.length; i++) {
+                        var for_name = backup_type.eq(i).find('[type="checkbox"]').attr('name');
+                        backup_type.eq(i).find('[type="checkbox"]').prop('checked', res[for_name]);
+                        if(res[for_name]) backup_type.eq(i).find('[type="checkbox"]').next().addClass('active');
+                    }
+                    $(".storage-checkbox-list").html(storage_list);
+                    $(".logs-backup [name=save]").val(res.save);
+                    $('.storage-checkbox-list').on('click', '.box-group',function (ev) {
+                        var active = $(this).find('input').prop('checked'), checkbox = $(this).find('.bt_checkbox_groups');
+                        active ? checkbox.removeClass('active') : checkbox.addClass('active');
+                        $(this).find('input').prop('checked', !active);
+                        $('.logs-backup .bt_checkbox_groups').removeAttr('style');
+                    });
+                    var site_select = {
+                        init:function(){
+                            bt_render.select({
+                                url:'plugin?action=a&name=enterprise_backup&s=get_site_list',
+                                loading:'正在获取网站列表中，请稍后...',
+                                el:'#select-menu',
+                                config:{width: 285,placeholder:'请选择网站',ischeck:true,issearch:true},
+                                dataFilter:function(Fdata){
+                                    var _atty = []
+                                    $.each(Fdata,function(index,item){
+                                        _atty.push([index,item['name'],item['checked']])
+                                    })
+                                    sites_list = _atty;
+                                    return _atty
+                                },
+                                callback:function(ret){
+                                    choose_data = ret;
+                                }
+                            })
+                        },
+                    }
+                    site_select.init();
+                    var week_select = {
+                        week_list:[['1','周一'],['2','周二'],['3','周三'],['4','周四'],['5','周五'],['6','周六'],['0','周日']],
+                        init:function(){
+                            if (res.open&&res.type == 'week') {
+                                for (var i = 0; i < this.week_list.length; i++) {
+                                    if(res.where_week == this.week_list[i][0]){
+                                        this.week_list[i].push(true);
+                                        break
+                                    }
+                                }
+                            } else {
+                                this.week_list[4].push(true);
+                            }
+                            bt_render.select({
+                                el:'#week-menu',
+                                config:{width: 70,placeholder:'周五',ischeck:false,issearch:false},
+                                data:this.week_list,
+                                callback:function(ret){
+                                    choose_data = ret;
+                                    console.log(ret)
+                                }
+                            })
+                        },
+                    }
+                    week_select.init();
+                    var time_select = {
+                        select_list:[['day','每天'],['day-n','N天'],['hour','每小时'],['hour-n','N小时'],['minute-n','N分钟'],['week','每星期'],['month','每月']],
+                        init:function(){
+                            if (res.open) {
+                                for (var i = 0; i < this.select_list.length; i++) {
+                                    if(res.type == this.select_list[i][0]){
+                                        this.select_list[i].push(true);
+                                        break
+                                    }
+                                }
+                            } else {
+                                this.select_list[5].push(true);
+                            }
+                            bt_render.select({
+                                el:'#time-menu',
+                                config:{width: 80,placeholder:'每星期',ischeck:false,issearch:false},
+                                data:this.select_list,
+                                callback:function(ret){
+                                    time_data = ret;
+                                    that.setTimeType(ret[0]);
+                                }
+                            })
+                        },
+                    }
+                    time_select.init();
+                    switch(res.type){
+                        case 'day':
+                            $(".mask-time [name=where_hour]").val(res.where_hour);
+                            $(".mask-time [name=where_minute]").val(res.where_minute);
+                            break;
+                        case 'hour':
+                            $(".mask-time [name=where_minute]").val(res.where_minute);
+                            break;
+                        case 'hour-n':
+                            $(".mask-time [name=where_hour]").val(res.where1);
+                            $(".mask-time [name=where_minute]").val(res.where_minute);
+                            break;
+                        case 'minute-n':
+                            $(".mask-time [name=where_minute]").val(res.where1);
+                            break;
+                        case 'week':
+                            $(".mask-time [name=where_hour]").val(res.where_hour);
+                            $(".mask-time [name=where_minute]").val(res.where_minute);
+                            break;
+                        case 'day-n':
+                        case 'month':
+                            $(".mask-time [name=where1]").val(res.where1);
+                            $(".mask-time [name=where_hour]").val(res.where_hour);
+                            $(".mask-time [name=where_minute]").val(res.where_minute);
+                            break;
+                    }
+                    if (callback) callback();
+                }
+            });
+        },
+        // 设置恢复信息
+        setTimeType: function (type) {
+            $(".logs-backup .mask-time").removeClass('active');
+            switch(type){
+                case 'day':
+                case 'hour-n':
+                    $(".logs-backup .select-hour,.logs-backup .select-minute").addClass('active');
+                    break;
+                case 'hour':
+                case 'minute-n':
+                    $(".logs-backup .select-minute").addClass('active');
+                    break;
+                case 'day-n':
+                case 'month':
+                    $(".logs-backup .select-day,.logs-backup .select-hour,.logs-backup .select-minute").addClass('active');
+                    $(".logs-backup .select-day .fieldName").text(type == 'month'?'日':'天');
+                    break;
+                case 'week':
+                    $(".logs-backup .select-week,.logs-backup .select-hour,.logs-backup .select-minute").addClass('active');
+                    break;
+            }
+        },
+        // 设置恢复信息
+        recoveryTypeInfo: function (type) {
+            var that = this;
+            if (type) {
+                that.recoveryConfig = {
+                    editId: that.recoveryConfig.editId,
+                    editEl: '#recoveryFullView',
+                    editAjax: that.backupConfig.backupContent ? 'get_mysql_full_backup_list' : 'get_path_full_backup_list',
+                    editType: type
+                }
+            } else {
+                that.recoveryConfig = {
+                    editId: that.recoveryConfig.editId,
+                    editEl: '#recoveryIncView',
+                    editAjax: that.backupConfig.backupContent ? 'get_mysql_inc_backup_list' : 'get_path_inc_backup_list',
+                    editType: type
+                }
+            }
+        },
+        // 设置备份信息
+        backupTypeInfo: function (type) {
+            var config = this.backupConfig;
+            if (config.backupContent) {
+                config.editAjax = type ? 'batch_add_mysql_backup_setting' : 'modify_mysql_backup_setting';
+            } else {
+                config.editAjax = type ? 'add_path_backup_setting' : 'modify_path_backup_setting';
+            }
+            config.editViewBtn = type ? '添加任务' : '保存任务';
+            config.notEdit = type;
+        },
+        // 添加和管理数据库视图
+        createBackupView: function (data) {
+            var that = this;
+            this.ajaxTask({
+                method: 'get_databases',
+                middle: this.backupConfig.backupContent,
+                success: function (res) {
+                    var num = 0;
+                    for (var item in that.backupConfig.backupCloud) {
+                        if (that.backupConfig.backupCloud[item].status) num++;
+                    }
+                    if (num < 2 && bt.get_cookie('setConfigCheck') == null) {
+                        layer.confirm('检测到当前未配置其他备份存储方式，是否配置备份存储!</br><label style="margin:5px 0 0;"><input type="checkbox" id="setConfigCheck" style="margin-right: 5px"><span style="color:#666;font-size: 12px">已了解详情，不再显示弹窗</span></label>', {
+                            title: '备份存储检测',
+                            closeBtn: 2,
+                            icon: 0,
+                            zIndex: 19891999,
+                            btn: ['跳转至配置页面', '取消'],
+                            success: function () {
+                                $('#setConfigCheck').click(function () {
+                                    if ($(this).prop('checked')) bt.set_cookie('setConfigCheck', 1);
+                                });
+                            }
+                        }, function () {
+                            that.methods.returnBackupConfig();
+                        });
+                    }
+
+                    that.backupConfig.mysqlDataList = res;
+                    data.mysqlDataList = res;
+                    that.renderTemplate({
+                        html: set_backup_view.innerHTML,
+                        data: data
+                    }, function (html) {
+                        that.editView = layer.open({
+                            type: 1,
+                            area: '620px',
+                            title: that.ajaxList[data.editAjax],
+                            closeBtn: 2,
+                            shift: 5,
+                            content: html,
+                            btn: [data.editViewBtn, '取消'],
+                            success: function (layers, index) {
+                                that.selectAll(['#full_backup_type', '#full_backup_week', '#inc_backup_type']);
+                                that.event('#set_backup_view'); //关联事件
+                            },
+                            yes: function (index, layers) {
+                                that.getBackupFormData(function (formData) {
+                                    that.ajaxTask({
+                                        method: data.editAjax,
+                                        data: formData,
+                                        success: function (rdata) {
+                                            that[data.backupContent ? 'createDatabaseTabel' : 'createPathTabel'](function () {
+                                                layer.close(that.editView);
+                                                layer.msg(rdata.msg, {icon: rdata.status ? 1 : 2});
+                                            });
+                                        }
+                                    });
+                                });
+                            }
+                        });
+                    });
+                }
+            });
+        },
+        // 创建日志视图
+        createLogsView: function (row) {
+            var that = this;
+            that.ajaxTask({
+                method: that.backupConfig.backupContent ? 'get_mysql_backup_logs' : 'get_path_backup_logs',
+                data: {id: row.id},
+                success: function (rdata) {
+                    that.editView = layer.open({
+                        type: 1,
+                        area: ['600px', '580px'],
+                        title: that.backupConfig.backupContent ? '数据库[ ' + row.database + ' ]备份日志' : '文件目录[ ' + row.path + ' ]备份日志',
+                        closeBtn: 2,
+                        shift: 5,
+                        content: '<div id="logsView">' +
+                            '<div class="tab" style="display:' + (that.backupConfig.backupContent ? 'flex' : 'flex') + ';" bt-event-click="tabCutLogs|span"><span class="active">全量备份日志</span><span >增量备份日志</span></div>' +
+                            '<div class="tabContent">' +
+                            '<div><pre id="logsFullView">' + rdata.full_backup_logs + '</pre></div>' +
+                            '<div style="display:none"><pre id="logsIncView" >' + rdata.inc_backup_logs + '</pre></div>' +
+                            '</div>' +
+                            '</div>',
+                        success: function (layers, index) {
+                            that.event('#logsView');
+                            $('#logsFullView').scrollTop($('#logsFullView')[0].scrollHeight);
+                        }
+                    });
+                }
+            });
+        },
+        // 创建备份恢复视图
+        createRecoveryView: function (row) {
+            var that = this;
+            that.editView = layer.open({
+                type: 1,
+                area: ['750px', '705px'],
+                title: this.backupConfig.backupContent ? '恢复数据库[ ' + row.database + ' ]备份' : '恢复目录[ ' + row.path + ' ]备份',
+                closeBtn: 2,
+                shift: 5,
+                content: '<div id="RecoveryView">' +
+                    '<div class="tab" style="display:' + (this.backupConfig.backupContent ? 'flex' : 'flex') + ';" bt-event-click="tabCutRecovery|span"><span class="active">全量备份</span><span >增量备份</span></div>' +
+                    '<div class="tabContent">' +
+                    '<div><div id="recoveryFullView" class="divtable"></div></div>' +
+                    '<div style="display:none"><div id="recoveryIncView" class="divtable"></div></div>' +
+                    '</div>' +
+                    '</div>',
+                success: function (layers, index) {
+                    that.event('#RecoveryView');
+                    that.methods.tabCutRecovery(that.backupConfig.backupContent ? 1 : 1);
+                }
+            });
+        },
+        // 创建存储视图
+        createCloudView: function (config) {
+            var that = this;
+            this.ajaxTask({
+                method: 'get_' + config.type + '_config',
+                success: function (res) {
+                    for (var i = 0; i < res.length; i++) {
+                        config.lineList[i].val = res[i];
+                    }
+                    that.renderTemplate({
+                        html: set_cloud_view.innerHTML,
+                        data: config.lineList
+                    }, function (html) {
+                        that.editView = layer.open({
+                            type: 1,
+                            area: '560px',
+                            title: '编辑' + config.name + '存储配置',
+                            closeBtn: 2,
+                            shift: 5,
+                            content: html,
+                            btn: ['保存', '取消'],
+                            yes: function (indexs, layero) {
+                                if (config.type == 'local') {
+                                    layer.msg('本地存储暂不支持修改，请谅解！', {icon: 2});
+                                    return false;
+                                }
+                                var data = {};
+                                $('#cloud_from input').each(function(index,el){
+                                    var val = $(this).val(),name = $(this).attr('name');
+                                    data[name] = val;
+                                    if(data[name] == ''){
+                                        layer.msg('请输入' + config.lineList[i].tips, {icon: 2});
+                                        return false;
+                                    }
+                                })
+                                console.log(data)
+                                that.ajaxTask({
+                                    method: 'set_' + config.type + '_config',
+                                    data: data,
+                                    success: function (res) {
+                                        layer.close(indexs);
+                                        bt.set_cookie('enterpriseCloud', 1);
+                                        that.getCloudList(function () {
+                                            layer.msg(res.msg, {icon: res.status ? 1 : 2});
+                                        })
+                                    }
+                                });
+                            }
+                        });
+                    });
+                }
+            });
+        },
+        // 创建文件下载视图
+        createFileDownloadView: function (row) {
+            var that = this, _arry = [], _list = ''
+            if (typeof row.file_path != "undefined") {
+                _arry = row.file_path.split('/');
+            } else {
+                _arry = row.inc_file_path.split('/');
+            }
+
+            for (var item in row) {
+                if (item.indexOf('download') > -1 && row[item] != '') {
+                    var cloud = item.replace('_download', '');
+                    _list += '<li><a href="' + row[item] + '" target="_blank"><span class="ico_' + cloud + '"></span>从' + that.backupConfig.backupCloud[cloud]['name'] + '下载</a></li>';
+                }
+            }
+            that.editView = layer.open({
+                type: 1,
+                area: '400px',
+                title: '下载备份文件',
+                closeBtn: 2,
+                shift: 5,
+                content: '<div class="backupDownload">\
+									<div class="backupName"><span>文件名称：</span><span title="' + _arry[_arry.length - 1] + '">' + _arry[_arry.length - 1] + '</span></div>\
+									<div class="backupSize"><span>文件大小：</span><span>' + bt.format_size(row.local_file_size) + '</span></div>\
+									<div class="backupTime"><span>备份时间：</span><span>' + bt.format_data(row.addtime) + '</span></div>\
+									<div class="backupTarPass">\
+										<span>解压密码：</span>\
+										<span>' + row.tar_pass + '</span>\
+										<span class="ico-copy" data-clipboard-text="' + row.tar_pass + '"></span>\
+									</div>\
+									<ul class="backupCloudList">' + _list + '</ul>\
+								</div>',
+                success: function (layers, index) {
+                    var clipboard = new ClipboardJS('.ico-copy');
+                    clipboard.on('success', function (e) {
+                        layer.msg('复制成功', {icon: 1});
+                        e.clearSelection();
+                    });
+                    clipboard.on('error', function (e) {
+                        layer.msg('复制失败，请手动ctrl+c复制解压密码', {icon: 2});
+                    });
+                }
+            });
+        },
+        // 创建备份文件目录表格
+        createPathTabel: function (page, callback) {
+            var that = this;
+            if (typeof page == 'undefined') page = 1;
+            if (typeof page == 'function') callback = page, page = 1;
+            this.backupConfig.backupContent = false;
+            this.ajaxTask({
+                method: 'get_path_backup_setting_list',
+                data: {p: page},
+                success: function (res) {
+                    that.refreshTableView({
+                        el: '#pathTable',
+                        data: res.data,
+                        config: [
+                            {fid: 'path', title: '目录', width: '110px'},
+                            {
+                                fid: 'backup_type', title: '执行时机', width: '170px', templet: function (row, index) {
+                                    var html = '', full_backup_type = (row.full_backup_type == "week" ? true : false), inc_backup_type = (row.inc_backup_type == "day" ? true : false);
+                                    html += '全量：' + (full_backup_type ? '每周 ' : '每天 ') + (full_backup_type ? that.returnWeek(row.full_backup_week) + ' ' : '') + (row.full_backup_hour + ':' + row.full_backup_minute) + ' 执行'
+									if(row.inc_backup_need==1) html += '</br>增量：' + (inc_backup_type ? '每天 ' : '每小时 ') + (inc_backup_type ? (row.inc_backup_hour + ':') : '') + (inc_backup_type ? row.inc_backup_minute : row.inc_backup_minute + '分') + ' 执行';
+                                    return html;
+                                }
+                            },
+                            {
+                                fid: 'upload', title: '备份至', width: '160px', templet: function (row, index) {
+                                    var html = '', index = 0;
+                                    for (var item in row) {
+                                        if (item.indexOf('upload') > -1 && row[item] == 1) {
+                                            index++;
+                                            var cloud = item.replace('upload_', '');
+                                            html += that.backupConfig.backupCloud[cloud]['name'] + '、' + (index == 2 ? '</br>' : '');
+                                        }
+                                    }
+                                    html = html.replace(/、(<\/br>)?$/, '');
+                                    return html
+                                }
+                            },
+                            {
+                                fid: 'backup_save', title: '保留份数', templet: function (row, index) {
+                                    var html = '';
+                                    html += '全量：' + row.full_backup_save + '份';
+                                    if(row.inc_backup_need==1) html += '</br>增量：' + row.inc_backup_save + ' 份</br>';
+                                    return html
+                                }
+                            },
+                            {
+                                fid: 'status', title: '状态', templet: function (row, index) {
+                                    return '<span style="color:' + (row.status ? '#20a53a;' : 'red;') + '"><span>' + (row.status ? '运行中' : '已暂停') + '</span><span class="glyphicon glyphicon-' + (row.status ? 'play' : 'pause') + '"></span></span>';
+                                }, event: that.methods.modifyBackupStatus
+                            },
+                            {
+                                fid: 'set', title: '操作', width: '231px', style: 'text-align: right;', group: [{
+                                    title: '恢复备份',
+                                    event: that.methods.recoveryBackup
+                                }, {
+                                    title: '执行',
+                                    event: that.methods.startBackuptTask
+                                }, {
+                                    title: '日志',
+                                    event: that.methods.viewLogs
+                                }, {
+                                    title: '编辑',
+                                    event: that.methods.modifyBackup
+                                }, {
+                                    title: '删除',
+                                    event: that.methods.delBackup
+                                }]
+                            }
+                        ],
+                        pageEvent: 'createPathTabel',
+                        page: res.page,
+                        done: function () {
+                            if (callback) callback()
+                        }
+                    })
+                }
+            });
+        },
+        // 创建备份数据库表格
+        createDatabaseTabel: function (page, callback) {
+            var that = this;
+            if (typeof page == 'undefined') page = 1;
+            if (typeof page == 'function') callback = page, page = 1;
+            this.backupConfig.backupContent = true;
+            this.ajaxTask({
+                method: 'get_mysql_backup_setting_list',
+                data: {p: page},
+                success: function (res) {
+                    that.refreshTableView({
+                        el: '#databaseTable',
+                        data: res.data,
+                        config: [
+                            {fid: 'database', title: '数据库名/表', width: '110px'},
+                            {
+                                fid: 'backup_type', title: '执行时机', width: '170px', templet: function (row, index) {
+                                    var html = '', full_backup_type = (row.full_backup_type == "week" ? true : false),
+                                        inc_backup_type = (row.inc_backup_type == "day" ? true : false)
+                                    html += '全量：' + (full_backup_type ? '每周 ' : '每天 ') + (full_backup_type ? that.returnWeek(row.full_backup_week) + ' ' : '') + (row.full_backup_hour + ':' + row.full_backup_minute) + ' 执行';
+                                    if(row.inc_backup_need==1) html += '</br>增量：' + (inc_backup_type ? '每天 ' : '每小时 ') + (inc_backup_type ? (row.inc_backup_hour + ':') : '') + (inc_backup_type ? row.inc_backup_minute : row.inc_backup_minute + '分') + ' 执行';
+                                    return html;
+                                }
+                            },
+                            {
+                                fid: 'upload', title: '备份至', width: '180px', templet: function (row, index) {
+                                    var html = '', index = 0;
+                                    for (var item in row) {
+                                        if (item.indexOf('upload') > -1 && row[item] == 1) {
+                                            index++;
+                                            var cloud = item.replace('upload_', '');
+                                            html += that.backupConfig.backupCloud[cloud]['name'] + '、' + (index == 2 ? '</br>' : '');
+                                        }
+                                    }
+
+                                    html = html.replace(/、(<\/br>)?$/, '');
+                                    return html
+                                }
+                            },
+                            {
+                                fid: 'backup_save', title: '保留份数', templet: function (row, index) {
+                                    var html = '';
+                                    html += '全量：' + row.full_backup_save + ' 份';
+                                    if(row.inc_backup_need==1) html += '</br>增量：' + row.inc_backup_save + ' 份</br>';
+                                    return html
+                                }
+                            },
+                            {
+                                fid: 'status', title: '状态', templet: function (row, index) {
+                                    return '<span style="color:' + (row.status ? '#20a53a;' : 'red;') + '"><span>' + (row.status ? '运行中' : '已暂停') + '</span><span class="glyphicon glyphicon-' + (row.status ? 'play' : 'pause') + '"></span></span>';
+                                }, event: that.methods.modifyBackupStatus
+                            },
+                            {
+                                fid: 'set', title: '操作', width: '231px', style: 'text-align: right;', group: [{
+                                    title: '恢复备份',
+                                    event: that.methods.recoveryBackup
+                                }, {
+                                    title: '执行',
+                                    event: that.methods.startBackuptTask
+                                }, {
+                                    title: '日志',
+                                    event: that.methods.viewLogs
+                                }, {
+                                    title: '编辑',
+                                    event: that.methods.modifyBackup
+                                }, {
+                                    title: '删除',
+                                    event: that.methods.delBackup
+                                }]
+                            }
+                        ],
+                        pageEvent: 'createDatabaseTabel',
+                        page: res.page,
+                        done: function () {
+                            if (callback) callback()
+                        }
+                    })
+                }
+            });
+        },
+        // 单位转换
+        to_size:function(a){
+            var d = [" B"," KB"," MB", " GB", " TB", " PB"];
+            var e = 1024;
+            for(var b = 0; b < d.length; b++) {
+                if(a < e) {
+                    return(b == 0 ? a : a.toFixed(2)) + d[b]
+                }
+                a /= e
+            }
+        },
+        format_data: function(tm,format){
+    		if(format==undefined) format = "yyyy/MM/dd hh:mm:ss";
+    		tm  = tm.toString();
+    		if(tm.length > 10){
+    			tm = tm.substring(0,10);
+    		}	
+    		 var data = new Date(parseInt(tm) * 1000);
+    		 var o = {
+    		 "M+" : data.getMonth()+1, //month
+    		 "d+" : data.getDate(),    //day
+    		 "h+" : data.getHours(),   //hour
+    		 "m+" : data.getMinutes(), //minute
+    		 "s+" : data.getSeconds(), //second
+    		 "q+" : Math.floor((data.getMonth()+3)/3),  //quarter
+    		 "S" : data.getMilliseconds() //millisecond
+    		 }
+    		 if(/(y+)/.test(format)) format=format.replace(RegExp.$1,
+    		 (data.getFullYear()+"").substr(4 - RegExp.$1.length));
+    		 for(var k in o)if(new RegExp("("+ k +")").test(format))
+    		 format = format.replace(RegExp.$1,
+    		 RegExp.$1.length==1 ? o[k] : ("00"+ o[k]).substr((""+ o[k]).length));
+    		 
+    		return format;
+    	},
+        // 创建迁出迁出表格
+        createSqlDataTable: function (page, callback) {
+            var that = this;
+            if (typeof page == 'undefined') page = 1;
+            if (typeof page == 'function') callback = page, page = 1;
+            this.backupConfig.backupContent = true;
+            this.ajaxTask({
+                url: 'files?action=GetDir&tojs=GetFiles&p='+page+'&showRow=9',
+                method: 'sql_data',
+                data: {path: '/www/server/panel/plugin/enterprise_backup/data', sort: 'mtime', reverse: 'True'},
+                success: function (res) {
+                    var sqlData = [];
+                    for (var i = 0; i < res.FILES.length; i++) {
+                        var item = res.FILES[i].split(";"), element = {};
+                        element.name = item[0];
+                        element.size = that.to_size(item[1]);
+                        element.time = that.format_data(item[2]);
+                        sqlData.push(element);
+                    }
+                    var _page = res.PAGE.replace(/onclick/g, "data-page");
+                    if(res.PAGE.indexOf('Pnumber')>=0){
+                        var p1 = _page.indexOf('Pnumber')-13,
+                        p2 = _page.indexOf('共')-21,
+                        del_text = _page.substring(p1,p2),
+                        _page = _page.replace(del_text,'');
+                    }
+                    that.refreshTableView({
+                        el: '#sqlDataTable',
+                        data: sqlData,
+                        config: [
+                            {fid: 'name', title: '文件名称', width: '110px'},
+                            {fid: 'size', title: '文件大小', width: '110px'},
+                            {fid: 'time', title: '创建时间', width: '110px'},
+                            {
+                                fid: 'set', title: '操作', width: '231px', style: 'text-align: right;', group: [{
+                                    title: '下载',
+                                    event: that.methods.downSqlData
+                                }, {
+                                    title: '导入',
+                                    event: that.methods.useSqlData
+                                }, {
+                                    title: '删除',
+                                    event: that.methods.delSqlData
+                                }]
+                            }
+                        ],
+                        pageEvent: 'createSqlDataTable',
+                        page: _page,
+                        helpList: ['1. 此功能用于更换服务器时进行备份记录的迁移，请确保要迁入的服务器是全新安装的企业级备份',
+                        '2. 迁移步骤：旧服务器：导出记录-下载文件，新服务器：上传文件-导入记录',
+                        '3. 如果你的备份只保存在本地，请同时将本地的备份目录迁移到新服务器对应的目录',
+                        '4. 如果你的备份有保存至云端，可以不迁移本地的备份，但是要在新服务器上配置相同的云端存储'],
+                        done: function () {
+                            if (callback) callback()
+                        }
+                    })
+                }
+            });
+        },
+        
+        // 创建全量备份恢复备份表格
+        createRecoveryBackupTable: function (page, callback) {
+            var that = this;
+            if (typeof page == 'undefined') page = 1;
+            if (typeof page == 'function') callback = page, page = 1;
+            this.ajaxTask({
+                method: that.recoveryConfig.editAjax,
+                data: {sid: this.recoveryConfig.editId, p: page, size: 10},
+                success: function (rdata) {
+                    that.refreshTableView({
+                        el: that.recoveryConfig.editEl,
+                        data: rdata.data,
+                        config: [
+                            {
+                                fid: 'file_path', title: '文件名', width: '180px', templet: function (row, index) {
+                                    var _arry = [];
+                                    if (typeof row.file_path != "undefined") {
+                                        _arry = row.file_path.split('/');
+                                    } else {
+                                        _arry = row.inc_file_path.split('/');
+                                    }
+                                    return '<span class="text-ellipsis" style="width:180px;" title="' + _arry[_arry.length - 1] + '">' + _arry[_arry.length - 1] + '</span>'
+                                }
+                            },
+                            {
+                                fid: 'file_size', width: '300px', title: '文件大小', templet: function (row, index) {
+                                    var html = '',
+                                        _arry = [['local', '本地'], ['ftp', 'FTP'], ['alioss', '阿里'], ['txcos', '腾讯'], ['qiniu', '七牛'], ['aws', '亚马逊S3']],
+                                        num = 0;
+                                    for (var i = 0; i < _arry.length; i++) {
+                                        if (row[_arry[i][0] + '_file_size']) {
+                                            num++;
+                                            html += _arry[i][1] + '：' + bt.format_size(row[_arry[i][0] + '_file_size']) + ((num == 2) ? '、' : '、')
+                                        }
+                                    }
+                                    return html;
+                                }
+                            },
+                            {
+                                fid: 'addtime', title: '备份时间', templet: function (row, index) {
+                                    return bt.format_data(row.addtime);
+                                }
+                            },
+                            {
+                                fid: 'set', title: '操作', width: '140px', style: 'text-align: right;', group: [{
+                                    title: '恢复',
+                                    event: that.methods.recoveryFileBackup
+                                }, {
+                                    title: '下载',
+                                    event: that.methods.downloadFileBackup
+                                }, {
+                                    title: '删除',
+                                    event: that.methods.delFileBackup
+                                }]
+                            }
+                        ],
+                        pageEvent: 'createRecoveryBackupTable',
+                        page: rdata.page,
+                        done: function () {
+                            if (callback) callback()
+                        }
+                    });
+
+                }
+            });
+        },
+        // 数据获取处理
+        getBackupFormData: function (callback) {
+            var form = {}, that = this, backupType = that.backupConfig.backupType, storageList = 0;
+            if (this.backupConfig.backupContent) {
+                form['database'] = [];
+                if ($('.mysql_content_list>.mysql_checkbox_group input').prop('checked')) {
+                    for (var item in that.backupConfig.mysqlDataList) {
+                        form['database'].push(that.backupConfig.mysqlDataList[item].name);
+                    }
+                } else {
+                    $('.mysql_checkbox_list>li>.mysql_checkbox_group input').each(function () {
+                        var _type = $(this).attr('data-type');
+                        if ($(this).prop('checked')) {
+                            form['database'].push($(this).attr('name'));
+                        } else {
+                            var find_checkbox = $(this).parent().next().find('input');
+                            find_checkbox.each(function (el, index) {
+                                if ($(this).prop('checked')) form['database'].push($(this).attr('name'));
+                            });
+                        }
+                    });
+                }
+                if (form.database.length < 1) {
+                    layer.msg('请选择需要备份数据库和数据表！', {icon: 2});
+                    errorColor('.mysql_content_list');
+                    return false;
+                }
+                form['database'] = JSON.stringify(form['database']);
+            } else {
+                var path = $('#backup_from input[name=path]'), exclude = $('#backup_from textarea[name=exclude]');
+                if (path.val() == '') {
+                    layer.msg('请输入备份目录，不能为空！', {icon: 2});
+                    errorColor('input[name=path]');
+                    return false;
+                }
+                form['path'] = path.val();
+                if (exclude.val() != '') {
+                    exclude = exclude.val().split(/,|，|\s+/);
+                } else {
+                    exclude = [];
+                }
+                form['exclude'] = JSON.stringify(exclude);
+            }
+            var backupForm = $('.backupForm').serializeArray()
+            for (var i = 0; i < backupForm.length; i++) {
+                form[backupForm[i].name] = backupForm[i].value;
+            }
+            // if (this.backupConfig.backupContent) {
+            //     this.backupConfig.backupType = [['全量', 'full'], ['增量', 'inc']];
+            // } else {
+            //     this.backupConfig.backupType = [['全量', 'full']];
+            // }
+            this.backupConfig.backupType = [['全量', 'full'], ['增量', 'inc']];
+            form.inc_backup_need = $("#inc_form_opt").prop('checked')?1:0;
+            for (var i = 0; i < this.backupConfig.backupType.length; i++) {
+                var type = this.backupConfig.backupType[i][1], title = this.backupConfig.backupType[i][0];
+                var backup_hour = form[type + '_backup_hour'], backup_minute = form[type + '_backup_minute'],
+                    backup_save = form[type + '_backup_save'];
+                if(type == 'inc' && !form.inc_backup_need){
+                    break;
+                }
+                if (form[type + '_backup_type'] !== "hour") {
+                    if (backup_hour == "") {
+                        layer.msg('请输入' + title + '执行周期小时数，不能为空！', {icon: 2});
+                        errorColor('[name=' + type + 'backup_hour]');
+                        return false;
+                    } else if (!(backup_hour >= 0 && backup_hour <= 23)) {
+                        layer.msg('请输入' + title + '执行周期小时数，格式错误！', {icon: 2});
+                        errorColor('[name=' + type + 'backup_hour]');
+                        return false;
+                    }
+                }
+                if (backup_minute == "") {
+                    layer.msg('请输入' + title + '执行周期分钟数，不能为空！', {icon: 2});
+                    errorColor('[name=' + type + 'backup_minute]')
+                    return false;
+                } else if (!(backup_minute >= 0 && backup_minute <= 59)) {
+                    layer.msg('请输入' + title + '执行周期分钟数，格式错误！', {icon: 2});
+                    errorColor('[name=' + type + 'backup_minute]')
+                    return false;
+                }
+                if (backup_save == "") {
+                    layer.msg('请输入' + title + '保留最新，不能为空！', {icon: 2});
+                    errorColor('[name=' + type + 'backup_save]')
+                    return false;
+                } else if (!(backup_save >= 1 && backup_save <= 100)) {
+                    layer.msg('请输入' + title + '保留最新，范围为1-100份！', {icon: 2, time: 0});
+                    errorColor('[name=' + type + 'backup_save]');
+                    return false;
+                }
+            }
+            $('.backupStorageList input').each(function () {
+                form[$(this).attr('name')] = $(this).prop('checked') ? 1 : 0;
+                if (!$(this).prop('checked')) storageList++;
+            })
+            if (storageList == $('.backupStorageList input').length) {
+                layer.msg('请选择备份到哪里！', {icon: 2});
+                errorColor('.backupStorageList .bt_checkbox_groups');
+                return false;
+            }
+
+            function errorColor(el) {
+                $(el).css('border', '1px solid #ff6868');
+            }
+            if (!backupType.notEdit) form['id'] = $('[name=id]').val()
+            if (callback) callback(form);
+            return form;
+        },
+        // 返回周期中文
+        returnWeek: function (week) {
+            var arry = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            for (var i = 0; i < arry.length; i++) {
+                return arry[week];
+            }
+        },
+        // 设置属性
+        setAttr: function (el, type, data) {
+            $(el)[type](data);
+        },
+        // 行内模拟事件绑定
+        event: function (el) {
+            var that = this;
+            _html = $('#enterprise_backup')[0].innerHTML, event_list = {};
+            if (el != undefined) _html = $(el)[0].innerHTML;
+            _reg = new RegExp(/bt-event-(click|change|focus)="([a-z0-9A-Z]+)\|*([a-z0-9A-Z]*)"/g);
+            _html.replace(_reg, function ($1, $2, $3, $4) {
+                if (!event_list[($2)]) {
+                    if ($4 != "") {
+                        $('[' + $1 + ']').unbind($2).on($2, $4, function (ev) {
+                            that.methods[$3].apply(this, [ev, $(this).index]);
+                        });
+                    } else {
+                        $('[' + $1 + ']').unbind($2).on($2, function (ev) {
+                            that.methods[$3].apply(this, [ev]);
+                        });
+                    }
+                    event_list[$3] = true;
+                }
+            });
+        },
+        // 模板渲染
+        renderTemplate:function(obj, callback) {
+            if (!obj.html) return '缺少模板HTML';
+            var re = /<%([^%>]+)?%>/g, reExp = /(^( )?(if|for|else|switch|case|break|{|}))(.*)?/g, code = 'var r=[];\n',
+                cursor = 0;
+            var add = function (line, js) {
+                js ? (code += line.match(reExp) ? line + '\n' : 'r.push(' + line + ');\n') :
+                    (code += line != '' ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : '');
+                return add;
+            }
+            while (match = re.exec(obj.html)) {
+                add(obj.html.slice(cursor, match.index))(match[1], true);
+                cursor = match.index + match[0].length;
+            }
+            add(obj.html.substr(cursor, obj.html.length - cursor));
+            code += 'return r.join("");';
+            if (callback) {
+                callback(new Function(code.replace(/[\r\t\n]/g, '')).apply(obj.data));
+            } else {
+                return new Function(code.replace(/[\r\t\n]/g, '')).apply(obj.data);
+            }
+        },
+        // 请求任务处理
+        ajaxTask: function (config) {
+            if (config.middle === false) {
+                config.success();
+                return false;
+            }
+            var _obj = {
+                tips: '正在' + this.ajaxList[config.method] + ',请稍后...',
+                method: config.method,
+                data: config.data || '',
+                success: function (rdata) {
+                    if (config.success) config.success(rdata);
+                },
+                error: function (rdata) {
+                    if (config.error) config.error(rdata);
+                }
+            };
+            if(config.url) _obj.url = config.url;
+            this.http(_obj);
+        },
+        // 渲染表格视图
+        refreshTableView: function (obj) {
+            var _thead = '<thead><tr>', _tbody = '', _config = obj.config, _data = obj.data, _event = {}, that = this,inc_need='',
+                form_id = obj.el.replace('#', '');
+            obj.form_id = form_id;
+            $(obj.el).css({'height': is_defined((typeof obj.height), obj.height, 'auto')}).addClass(is_defined((typeof obj.height), 'fixed-table-view'));
+            for (var i = 0; i < _config.length; i++) {
+                _thead += '<th ' + is_data_type({name: 'width', data: _config[i]}) + is_data_type({
+                    name: 'align',
+                    data: _config[i]
+                }) + is_data_type({name: 'style', data: _config[i]}) + '>' + _config[i].title + '</th>';
+                if (_config[i]['event']) {
+                    _event[obj.form_id + '_' + _config[i].fid] = {
+                        name: obj.form_id + '_' + _config[i].fid,
+                        event: _config[i]['events'] !== undefined ? _config[i]['events'] : 'click',
+                        method: _config[i]['event']
+                    };
+                }
+            }
+            _thead += '</tr></thead>';
+            _tbody += '<tbody>';
+            if (obj.inverted) _data.reverse();
+            for (var z = 0; z < _data.length; z++) {
+                _tbody += '<tr data-index="' + z + '">';
+                for (var j = 0; j < _config.length; j++) {
+                    var templet = '', _text = '';
+                    _tbody += '<td ' + (is_data_type({name: 'style', data: _config[j]})) + ' ' + is_data_type({
+                        name: 'class',
+                        data: _config[j]
+                    }) + '>';
+                    if (_config[j].templet !== undefined) {
+                        _text = _config[j].templet(_data[z], z);
+                        if (_config[j].event) {
+                            _text = '<span><a class="btlink" ' + is_defined((typeof _config[j].event), 'data-event="' + obj.form_id + '_' + _config[j].fid + '"') + is_data_type({
+                                name: 'href',
+                                data: _config[j],
+                                val: _config[j]['href'] ? _text : false
+                            }) + is_data_type({name: 'class', data: _config[j]}) + is_data_type({
+                                name: 'target',
+                                data: _config[j]
+                            }) + '>' + _text + '</a></span>';
+                            _event[obj.form_id + '_' + _config[j].fid] = {
+                                name: obj.form_id + '_' + _config[j].fid,
+                                event: (_config[j].events || 'click'),
+                                method: _config[j].event
+                            };
+                        }
+                        _tbody += _text;
+                    } else if (_config[j].group !== undefined) {
+                        var _arry = [];
+                        if (typeof _config[j].group === 'function') {
+                            _arry = _config[j].group(_data[z], z)
+                        } else {
+                            _arry = _config[j].group;
+                        }
+                        _tbody += '<span>';
+                        
+                        for (var y = 0; y < _arry.length; y++) {
+                            if(_arry[y].title=='编辑') inc_need = 'data-inc="'+_data[z].inc_backup_need+'"';
+                            _tbody += '<a class="btlink"' + is_defined((typeof _arry[y]['event']), 'data-event="' + obj.form_id + '_' + _config[j].fid + '_' + y + '"') +
+                                is_data_type({name: 'href', data: _config[y]}) +
+                                is_data_type({name: 'class', data: _config[y]}) +
+                                is_data_type({
+                                    name: 'target',
+                                    data: _config[y]
+                                }) + inc_need + '>' + _arry[y].title + '</this.cloudAarry>';
+                            if (_arry[y]['event'] && !_event[obj.form_id + '_' + _config[j].fid + '_' + y]) {
+                                _event[obj.form_id + '_' + _config[j].fid + '_' + y] = {
+                                    name: obj.form_id + '_' + _config[j].fid + '_' + y,
+                                    event: _arry[y]['events'] !== undefined ? _arry[y]['events'] : 'click',
+                                    method: _arry[y]['event']
+                                };
+                            }
+                            _tbody += '</>';
+                            if ((y + 1) !== _arry.length) _tbody += '&nbsp;&nbsp;|&nbsp;&nbsp;';
+                            inc_need='';
+                        }
+                        _tbody += '</span>';
+                    } else {
+                        _text = _data[z][_config[j].fid];
+                        if (_text !== '') {
+                            _tbody += '<span>';
+                            switch (_config[j].type) {
+                                case 'text':
+                                    _tbody += '<span ' + is_defined((typeof _config[j].event), 'data-event="' + obj.form_id + '_' + _config[j].fid + '"') + ' title="_text">' + _text + '</span>';
+                                    break;
+                                case 'link':
+                                    _tbody += '<a class="btlink" ' + is_defined((typeof _config[j].event), 'data-event="' + obj.form_id + '_' + _config[j].fid + '"') + is_data_type({
+                                        name: 'href',
+                                        data: _config[j],
+                                        val: _config[j]['href'] ? _text : false
+                                    }) + is_data_type({name: 'class', data: _config[j]}) + is_data_type({
+                                        name: 'target',
+                                        data: _config[j]
+                                    }) + '>' + _text + '</a>';
+                                    break;
+                                case 'checkbox':
+                                    _tbody += '<input type="checkbox" class="waf_td_checkbox" ' + (_data[z][_config[j].fid] ? 'checked' : '') + ' ' + is_defined((typeof _config[j].event), 'data-event="' + obj.form_id + '_' + _config[j].fid + '"') + ' />';
+                                    break;
+                                case 'btswitch':
+                                    _tbody += '<input class="btswitch btswitch-ios" id="close_' + _config[j].fid + '_' + obj.form_id + '_' + z + '" ' + (_data[z][_config[j].fid] ? 'checked' : '') + ' type="checkbox">' +
+                                        '<label class="btswitch-btn" for="close_' + _config[j].fid + '_' + obj.form_id + '_' + z + '" ' + is_defined((typeof _config[j].event), 'data-event="' + obj.form_id + '_' + _config[j].fid + '"') + '></label>';
+                                    break;
+                                default:
+                                    _tbody += '<span ' + is_defined((typeof _config[j].event), 'data-event="' + obj.form_id + '_' + _config[j].fid + '"') + ' title="' + _text + '">' + _text + '</span>';
+                                    break;
+                            }
+                            _tbody += '</span>';
+                        } else {
+                            _tbody += '<span>--</span>';
+                        }
+                    }
+                    _tbody += '</td>';
+                }
+                _tbody += '</tr>';
+            }
+            if (_data.length === 0) {
+                _tbody += '<tr><td colspan="' + _config.length + '" align="center">' + is_defined((typeof obj.tips), obj.tips, '当前数据为空') + '</td></tr>';
+            }
+            _tbody += '</tbody>';
+            $(obj.el).html('<table class="' + is_defined((typeof obj.class), obj.class, 'table table-hover') + '">' + _thead + _tbody + '</table>');
+            if (obj.page) {
+                if ($(obj.el).parent().find('.page').length == 0) {
+                    $(obj.el).after('<div class="page">' + obj.page + '</div>');
+                } else {
+                    $(obj.el).next().html(obj.page);
+                }
+            }
+            if (obj.helpList) {
+                if ($(obj.el).parent().find('.help-info-text').length == 0) {
+                    var help_ul = '<ul class="help-info-text c7">';
+                    for (var i = 0; i < obj.helpList.length; i++) {
+                        help_ul += '<li>'+obj.helpList[i]+'</li>';
+                    }
+                    help_ul += '</ul>';
+                    $(obj.el).parent().append(help_ul);
+                }
+            }
+            bind_event_group(obj, _event);
+            setTimeout(function () {
+                if (obj.done) obj.done(obj.data, obj);
+                if (obj.pageEvent) {
+                    // 获取分页事件关联
+                    $(obj.el + '+.page a').on('click', function (e) {
+                        var page = $(this).attr('href');
+                        if(page === undefined){
+                            page = $(this).attr('data-page');
+                            page = page.match(/\(([^)]*)\)/)[1];
+                        }else{
+                            page = page.match(/p=([0-9])$/)[1];
+                        }
+                        that[obj.pageEvent](page);
+                        e.stopPropagation();
+                        e.preventDefault();
+
+                    });
+                }
+            }, 100);
+            if (obj.height !== undefined) {
+                $(obj.el + ' table').before('<table class="' + is_defined((typeof obj.class), obj.class, 'table table-hover fixed-table-thead') + '">' + _thead + '</table>')
+                $(obj.el + ' .fixed-table-thead').next().addClass('fixed-table');
+                setTimeout(function () {
+                    $(obj.el + ' .fixed-table thead th').each(function (index, el) {
+                        var _offsetWidth = $(this)[0].offsetWidth - 20;
+                        $(obj.el + ' .fixed-table-thead thead th').eq(index).html($(obj.el + ' thead th').eq(index).text() + '<div class="waf-fht-cell" style="width:' + _offsetWidth + 'px">');
+                    });
+                }, 100);
+                if ($(obj.el + ' .fixed-table')[0].offsetHeight > parseFloat(obj.height)) {
+                    $(obj.el + ' .fixed-table-thead').addClass('fixed-table-shadow');
+                }
+                $(obj.el + ' .fixed-table-thead').css('top', $(obj.el).scrollTop())
+                $(obj.el).scroll(function () {
+                    $(obj.el + ' .fixed-table-thead').css('top', $(this).scrollTop());
+                });
+            }
+
+            // 判断格式
+            function is_defined(is_val, num1, num2) {
+                return is_val !== 'undefined' ? (num1 === undefined ? is_val : num1) : (num2 === undefined ? '' : num2);
+            }
+
+            // 判断数据类型 (仅用于表单渲染类型绑定)
+            function is_data_type(obj) {
+                if (obj.data === undefined) {
+                    return 'href="javascript:;" ';
+                }
+                if (obj.data[obj.name] !== undefined) {
+                    return obj.name + '="' + obj.data[obj.name] + '" ';
+                }
+                if (obj.name == 'href') {
+                    if (!obj.val) {
+                        return 'href="javascript:;" ';
+                    } else {
+                        return 'href="' + obj.val + '" ';
+                    }
+                }
+                return '';
+            }
+
+            // 绑定事件组 (仅用于表单渲染事件绑定)
+            function bind_event_group(obj, events) {
+                for (var i in events) {
+                    (function (i) {
+                        $(obj.el + ' [data-event=' + events[i].name + ']').unbind('click').click(function (e) {
+                            var _index = parseInt($(this).parent().parent().parent().attr('data-index')),
+                                _data = obj.data[_index];
+                            return events[i].method.bind(that)(_data, _index, e)
+                        });
+                    })(i)
+                }
+            }
+        },
+        // 下拉全部渲染
+        selectAll: function (_arry) {
+            for (var j = 0; j < _arry.length; j++) {
+                this.select(_arry[j]);
+            }
+        },
+        // 下拉
+        select: function (elem) {
+            if ($(elem).length == 0) return false;
+            $(elem).after('<div class="bt_select_group"><div class="bt_select_active"><span class="select_val default">请选择</span><span class="glyphicon glyphicon-triangle-bottom" aria-hidden="true"></span> </div><ul class="bt_select_ul"></ul></div>');
+            var _html = '', select_el = $(elem), select_group = select_el.next(),
+                select_ul = select_group.find('.bt_select_ul'), select_val = select_group.find('.select_val'),
+                select_icon = select_group.find('.glyphicon');
+            select_el.find('option').each(function (index, el) {
+                var active = select_el.val() === $(el).val(), _val = $(el).val(), _name = $(el).text();
+                _html += '<li data-val="' + _val + '" class="' + ($(this).attr('disabled') ? 'hide' : '') + ' ' + (active ? 'active' : '') + '">' + _name + '</li>';
+                if (active) {
+                    select_val.text(_name);
+                    _val !== '' ? select_val.removeClass('default') : select_val.addClass('default');
+                }
+            });
+            select_el.hide();
+            select_ul.html(_html);
+            $(elem).next('.bt_select_group').find('.select_val').unbind('click').click(function (e) {
+                var _current = select_group.find('.bt_select_ul.active').length>=1?false:true;
+                if (_current && $('.bt_select_group .bt_select_ul.active').length >= 1) {
+                    $('.bt_select_group').removeAttr('style');
+                    $('.bt_select_group').find('.bt_select_ul').removeClass('active fadeInUp animated');
+                    $('.bt_select_group').find('.glyphicon').css({'transform': 'rotate(0deg)'});
+                }
+                is_show_select_ul(select_ul.hasClass('active'));
+                $(document).click(function () {
+                    is_show_select_ul(true);
+                    $(this).unbind('click');
+                });
+                e.stopPropagation();
+                e.preventDefault();
+            });
+            $(elem).next('.bt_select_group').find('.bt_select_ul li').unbind('click').click(function () {
+                var _val = $(this).attr('data-val'), _name = $(this).text();
+                $(this).addClass('active').siblings().removeClass('active');
+                _val !== '' ? select_val.removeClass('default') : select_val.addClass('default');
+                select_val.text(_name);
+                select_el.val(_val);
+                $(elem).find('option[value="' + _val + '"]').change();
+                is_show_select_ul(true);
+            });
+
+            function is_show_select_ul(active) {
+                console.log(active)
+                if (active) {
+                    select_group.removeAttr('style');
+                    select_icon.css({'transform': 'rotate(0deg)'});
+                    select_ul.removeClass('active fadeInUp animated');
+                } else {
+                    select_group.css('borderColor', '#20a53a');
+                    select_icon.css({'transform': 'rotate(180deg)'});
+                    select_ul.addClass('active fadeInUp animated');
+                }
+            }
+        },
+        // 请求封装
+        http: function (obj) {
+            var loadT = '';
+            if (obj.load == undefined) obj.load = 0;
+            if (obj.url == undefined) {
+                if (obj.pluginName === undefined && this.pluginName !== undefined) {
+                    obj.pluginName = this.pluginName
+                }
+                if (!obj.pluginName || !obj.method) {
+                    layer.msg('插件类名称，或插件方法名称缺失!', {icon: 2});
+                    return false;
+                }
+            }
+            if (obj.load === 0 || obj.tips != '') {
+                loadT = layer.msg(obj.tips, {icon: 16, time: 0, shade: 0.3});
+            } else if (obj.load === 1 || (obj.tips == undefined && obj.load == undefined)) {
+                loadT = layer.load();
+            }
+            $.ajax({
+				type: 'POST',
+				url: obj.url != undefined ? obj.url : ('/plugin?action=a&name=' + obj.pluginName + '&s=' + obj.method),
+				data: obj.data || {},
+				timeout: obj.timeout || 99999999,
+				complete: function (res) {
+					if (obj.load === 0 || obj.load === 1) layer.close(loadT);
+				},
+				success: function (rdata) {
+					if (obj.check) {
+						obj.success(rdata);
+						return false
+					}
+					if (rdata.status === false) {
+						layer.msg(rdata.msg, { icon: 2 });
+						return false;
+					}
+					obj.success(rdata);
+				},
+				error: function (ex) {
+					if (!obj.error) {
+						obj.msg || obj.msg == undefined ? layer.msg('请求过程发现错误!', {
+							icon: 2
+						}) : '';
+						return;
+					}
+					return obj.error(ex);
+				}
+			});
+            // $.ajax({
+            //     type: 'POST',
+            //     url: obj.url != undefined ? obj.url : ('/plugin?action=a&name=' + obj.pluginName + '&s=' + obj.method),
+            //     data: obj.data || {},
+            //     timeout: obj.timeout || 99999999,
+            //     complete: function (xhr, status) {
+            //         if (obj.load === 0 || obj.load === 1) layer.close(loadT);
+            //         var rdata = {};
+            //         if (status === "success") {
+            //             rdata = xhr.responseJSON;
+            //             if (typeof rdata.status != undefined && rdata.status === false) {
+            //                 layer.msg(rdata.msg, {icon: 2});
+            //                 if (obj.error) obj.error(rdata);
+            //             } else {
+            //                 if (obj.success) obj.success(rdata);
+            //             }
+            //         } else {
+            //             layer.msg('请求状态码:' + xhr.status + ',请求发生错误!', {icon: 2});
+            //         }
+            //     }
+            // });
+        }
+    }
+    enterprise_backup.init();
+    var bt_render = {
+        /**
+         * @descripttion: 选项框多选搜索
+         * @author: Lifu
+         * @param {Object} config.el                    选项框的元素/id（带#符号）
+         * @param {Object} config.url                   数据请求
+         * @param {Object} config.loading               请求时的提示语
+         * @param {Object} config.param                 请求所需参数
+         * @param {Object} config.dataFilter            请求数据处理（过滤成模板类型数据）
+         * @param {Object} config.config.width          选项框宽度
+         * @param {Object} config.config.name           选项框搜索的name值
+         * @param {Object} config.config.placeholder    选项框提示的文字
+         * @param {Object} config.config.ischeck        选项框是否多选
+         * @param {Object} config.config.issearch       选项框是否可搜索
+         * @param {Object} config.data                  选项框所能选择的数据
+         * @Date: 2020-10-29
+         * @return {Function} callback 
+         */
+        select:function(config){
+            function RenderSelect(config){
+                this.config = config;
+                this.init();
+            }
+            RenderSelect.prototype = {
+                _event: [],           //选中的数据
+                inputShowText: '',    //input位置显示的文本内容
+                manyCheckArray:[],    //多选时临时存放的数据（用于拼接数据
+                init:function(){
+                    var that = this,_Obj = this.config
+                    // 数据类型判断
+                    if(_Obj.url != undefined){
+                        this.request_data_list()
+                    }else if(_Obj.data != undefined){
+                        this.create_select_list()
+                    }else{
+                        return layer.msg('缺少url或data参数',{icon:2})
+                    }
+                    // 监听选项框 文档事件
+                    // $(_Obj.el).on('click',function(e){
+                    //     $(document).one('click',function(ev){
+                    //         ev.stopPropagation();
+                    //         $(_Obj.el +' .select-picker-search').removeClass('Select-moseDown');
+                    //         $(_Obj.el +' .select-list-item').hide();
+                    //     })
+                    //     e.stopPropagation();
+                    // });
+
+                    // 点击空白区域隐藏显示
+                    $(document).click(function(e){
+                        var a = $(_Obj.el); //设置空白以外的目标区域
+                        if(!a.is(e.target) && a.has(e.target).length === 0){
+                            //写你需要做的事件
+                            $(_Obj.el +' .select-picker-search').removeClass('Select-moseDown');
+                            $(_Obj.el +' .select-list-item').hide();
+                        }
+                    });
+                    // 显示/隐藏下拉列表
+                    $(_Obj.el).unbind('click').on('click','.select-picker-search',function(e){
+                        if(!$(this).hasClass('Select-moseDown')){
+                            $(this).addClass('Select-moseDown');
+                            $(_Obj.el +' .select-list-item').show();
+                            $('input[name=query_list]').focus();
+                        }else{
+                            $(this).removeClass('Select-moseDown');
+                            $(_Obj.el +' .select-list-item').hide();
+                        }
+                    });
+                    // 列表点击时
+                    $(_Obj.el).on('click','.select-list-item li',function(ev){
+                        var check_all = $('.checkAll'),_attr = $(this).data('attr'),_index = $(this).data('index');
+                        switch(_attr){
+                            case 'all':
+                                if(!$(this).hasClass('active')){
+                                    $(this).addClass('active').siblings().addClass('active');
+                                    that._event = $.extend(true,[],_Obj.data)    //深拷贝数组否则影响原有数据
+                                }else{
+                                    $(this).removeClass('active').siblings().removeClass('active');
+                                    that._event = [];
+                                }
+                                break;
+                            default:
+                                if(!$(this).hasClass('active')){
+                                    _Obj.config.ischeck ? $(this).addClass('active') : $(this).addClass('active').siblings().removeClass('active');
+                                    _Obj.config.ischeck ? that._event.push(_Obj.data[_index]) : that._event = _Obj.data[_index];
+                                }else{
+                                    if(_Obj.config.ischeck){
+                                        $(this).removeClass('active');
+                                        for(var i = 0;i<that._event.length; i++){
+                                            if(that._event[i][0] === _attr) that._event.splice(i,1);
+                                        }
+                                        
+                                    }
+                                }
+                                // 选择的数量等于原有数据时自动全选
+                                if(that._event.length == _Obj.data.length){
+                                    check_all.addClass('active')
+                                }else{
+                                    check_all.removeClass('active')
+                                }
+                                break;
+                        }
+                        if(_Obj.config.ischeck){  //判断是否多选
+                            // 判断选择数量
+                            if(that._event.length < 1){
+                                that.inputShowText = _Obj.config.placeholder
+                            }else{
+                                that.manyCheckArray = [];
+                                $.each(that._event, function(k,showlist){that.manyCheckArray.push(showlist[1])})
+                                that.inputShowText = that.manyCheckArray.join(', ')
+                            }
+                        }else{
+                            // 单选时选中直接输入并关闭选择区
+                            that.inputShowText = _Obj.data[_index][1];
+                            $(_Obj.el +' .select-picker-search').click();
+                        }
+                        // 输出内容
+                        $(_Obj.el +' .picker-text-list').attr('title',that.inputShowText).html(that.inputShowText);
+                        if(_Obj.callback) _Obj.callback(that._event);
+                        ev.stopPropagation();
+                        ev.preventDefault();
+                    })
+                    // 搜索功能
+                    $(_Obj.el).on('input','input[name=query_list]',function(){
+                        var _serach = $(this).val();
+                        if(_serach.trim() != ''){
+                            $('.select-list-item li').each(function(){
+                                var _span = $(this).find('span').html()
+                                if(_span.toLowerCase().indexOf(_serach.toLowerCase()) == -1){
+                                    $(this).hide()
+                                }else{
+                                    $(this).show()
+                                }
+                            })
+                        }else{
+                            $('.select-list-item li').show()
+                        }
+                    })
+                },
+                /**
+                 * @descripttion: 创建下拉列表
+                 * @author: Lifu
+                 * @Date: 2020-10-30
+                 * @return: 无返回值
+                 */
+                create_select_list:function(){
+                    var that = this,_html = '',_li = '',obj = this.config,_config = this.config.config, _placeholder = '';
+                    _html += '<div class="bt-select-full '+(_config.ischeck ? 'many' : 'only-one')+'">'
+                        +'<div class="select-picker-search" style="width:'+_config.width+'px"><span class="picker-text-list" style="width:'+(_config.width - 35)+'px">'+_config.placeholder+'</span></div>'
+                        +'<span class="down-select-full"></span>'
+                        +'<div class="select-list-item">'
+                        +(_config.issearch?'<input name="query_list" placeholder="字段模糊搜索" style="width:'+(_config.width - 20)+'px">':'')
+                        +'<ul>';
+                    // 多选时添加全部选中
+                    _config.ischeck ? _li+='<li data-attr="all" class="checkAll" style="width:'+(_config.width - 20)+'px"><div class="select-check-full"></div><span class="select-name-full">全部选中</span></li>':'';
+                    $.each(obj.data,function(index,item){
+                        var _check = 'class="'+ (item[2] ? 'active' : '') +'"';
+                        _placeholder += (item[2] ? item[1] + (_config.ischeck?', ':'') : '');
+                        if(item[2]) that._event.push(item)
+                        _li += '<li data-attr="'+item[0]+'" data-index="'+index+'" '+_check+' style="width:'+(_config.width - 20)+'px">'
+                                +(_config.ischeck?'<div class="select-check-full"></div>':'')
+                                +'<span class="select-name-full">'+item[1]+'</span>'
+                            +'</li>'
+                    })
+                    _html += _li +'</ul></div></div>'
+                    $(obj.el).html(_html);
+                    _placeholder = _config.ischeck ? _placeholder.substr(0, _placeholder.length - 2) : _placeholder;
+                    if(_placeholder != '') $(obj.el).find('.picker-text-list').html(_placeholder);
+                },
+                /**
+                 * @descripttion: 请求API返回的数据
+                 * @author: Lifu
+                 * @Date: 2020-10-30
+                 * @return: 无返回值
+                 */
+                request_data_list:function(){
+                    var that = this,obj = this.config;
+                    this.$http({url:obj.url,loading:obj.loading,param:obj.param,success(rdata){
+                        if(obj.dataFilter){
+                            obj.data = obj.dataFilter(rdata);
+                        }else{ obj.data = rdata.data}
+                        that.create_select_list();
+                    }})
+                },
+                /**
+                 * @descripttion: 请求封装
+                 * @author: Lifu
+                 * @param {Object} obj.url         // 请求地址【必填】
+                 * @param {Object} obj.loading     // 加载提示语
+                 * @param {Object} obj.param       // 请求参数
+                 * @Date: 2020-10-30
+                 * @return {Function} 返回请求数据 
+                 */
+                $http:function(obj){
+                    var loadT = '';
+                    if(obj.loading){
+                        loadT = layer.msg(obj.loading,{icon: 16,time: 0, shade: 0.1})
+                    }else{
+                        loadT = layer.load()
+                    }
+                    $.ajax({
+                        type: 'POST',
+                        url: obj.url,
+                        data: obj.param || {},
+                        timeout: 99999999,
+                        complete: function(){
+                            layer.close(loadT);
+                        },
+                        success: function(rdata){
+                            obj.success(rdata);
+                        },
+                        error: function(err){
+                            layer.msg('请求过程发现错误',{icon:2})
+                        }
+                    })
+                }
+            }
+            return new RenderSelect(config);
+        }
+    }
+    jQuery.prototype.serializeObject = function () {
+        var a,o,h,i,e;
+        a = this.serializeArray();
+        o={};
+        h=o.hasOwnProperty;
+        for(i=0;i<a.length;i++){
+            e=a[i];
+            if(!h.call(o,e.name)){
+                o[e.name]=e.value;
+            }
+        }
+        return o;
+    }
+</script>
