@@ -1,0 +1,1355 @@
+#coding: utf-8
+#-------------------------------------------------------------------
+# 宝塔Linux面板
+#-------------------------------------------------------------------
+# Copyright (c) 2015-2017 宝塔软件(http:#bt.cn) All rights reserved.
+#-------------------------------------------------------------------
+# Author: hwliang <hwl@bt.cn>
+#-------------------------------------------------------------------
+
+#------------------------------
+# 数据库管理类
+#------------------------------
+import public,db,re,time,os,sys,panelMysql,json
+from BTPanel import session
+import datatool
+class database(datatool.datatools):
+    sid = 0
+
+    def AddCloudServer(self,get):
+        '''
+            @name 添加远程服务器
+            @author hwliang<2021-01-10>
+            @param db_host<string> 服务器地址
+            @param db_port<port> 数据库端口
+            @param db_user<string> 用户名
+            @param db_password<string> 数据库密码
+            @param db_ps<string> 数据库备注
+            @return dict
+        '''
+        if not hasattr(get,'db_host'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        if not hasattr(get,'db_port'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        if not hasattr(get,'db_user'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        if not hasattr(get,'db_password'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        if not hasattr(get,'db_ps'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        get.db_name = None
+        res = self.CheckCloudDatabase(get)
+        if isinstance(res,dict): return res
+        if public.M('database_servers').where('db_host=? AND db_port=?',(get.db_host,get.db_port)).count():
+            return public.returnMsg(False,'指定服务器已存在: [{}:{}]'.format(get.db_host,get.db_port))
+        get.db_port = int(get.db_port)
+        pdata = {
+            'db_host':get.db_host,
+            'db_port':get.db_port,
+            'db_user':get.db_user,
+            'db_password':get.db_password,
+            'ps': public.xssencode2(get.db_ps.strip()),
+            'addtime': int(time.time())
+        }
+
+        result = public.M("database_servers").insert(pdata)
+
+        if isinstance(result,int):
+            public.WriteLog('数据库管理','添加远程MySQL服务器[{}:{}]'.format(get.db_host,get.db_port))
+            return public.returnMsg(True,'添加成功!')
+        return public.returnMsg(False,'添加失败： {}'.format(result))
+
+    def GetCloudServer(self,get):
+        '''
+            @name 获取远程服务器列表
+            @author hwliang<2021-01-10>
+            @return list
+        '''
+        data = public.M('database_servers').select()
+        bt_mysql_bin = '{}/mysql/bin/mysql'.format(public.get_setup_path())
+
+        if not isinstance(data,list): data = []
+        if os.path.exists(bt_mysql_bin):
+            data.insert(0,{'id':0,'db_host':'127.0.0.1','db_port':3306,'db_user':'root','db_password':'','ps':'本地服务器','addtime':0})
+        return data
+
+
+    def RemoveCloudServer(self,get):
+        '''
+            @name 删除远程服务器
+            @author hwliang<2021-01-10>
+            @param id<int> 远程服务器ID
+            @return dict
+        '''
+
+        id = int(get.id)
+        if not id: return public.returnMsg(False,'参数传递错误，请重试!')
+        db_find = public.M('database_servers').where('id=?',(id,)).find()
+        if not db_find: return public.returnMsg(False,'指定远程服务器不存在!')
+        public.M('databases').where('sid=?',id).delete()
+        result = public.M('database_servers').where('id=?',id).delete()
+        if isinstance(result,int):
+            public.WriteLog('数据库管理','删除远程MySQL服务器[{}:{}]'.format(db_find['db_host'],int(db_find['db_port'])))
+            return public.returnMsg(True,'删除成功!')
+        return public.returnMsg(False,'删除失败： {}'.format(result))
+
+
+    def ModifyCloudServer(self,get):
+        '''
+            @name 修改远程服务器
+            @author hwliang<2021-01-10>
+            @param id<int> 远程服务器ID
+            @param db_host<string> 服务器地址
+            @param db_port<port> 数据库端口
+            @param db_user<string> 用户名
+            @param db_password<string> 数据库密码
+            @param db_ps<string> 数据库备注
+            @return dict
+        '''
+        if not hasattr(get,'id'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        if not hasattr(get,'db_host'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        if not hasattr(get,'db_port'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        if not hasattr(get,'db_user'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        if not hasattr(get,'db_password'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        if not hasattr(get,'db_ps'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+
+        id = int(get.id)
+        get.db_port = int(get.db_port)
+        db_find = public.M('database_servers').where('id=?',(id,)).find()
+        if not db_find: return public.returnMsg(False,'指定远程服务器不存在!')
+        _modify = False
+        if db_find['db_host'] != get.db_host or db_find['db_port'] != get.db_port:
+            _modify = True
+            if public.M('database_servers').where('db_host=? AND db_port=?',(get.db_host,get.db_port)).count():
+                return public.returnMsg(False,'指定服务器已存在: [{}:{}]'.format(get.db_host,get.db_port))
+
+        if db_find['db_user'] != get.db_user or db_find['db_password'] != get.db_password:
+            _modify = True
+
+        if _modify:
+            res = self.CheckCloudDatabase(get)
+            if isinstance(res,dict): return res
+
+        pdata = {
+            'db_host':get.db_host,
+            'db_port':get.db_port,
+            'db_user':get.db_user,
+            'db_password':get.db_password,
+            'ps': public.xssencode2(get.db_ps.strip())
+        }
+
+        result = public.M("database_servers").where('id=?',(id,)).update(pdata)
+        if isinstance(result,int):
+            public.WriteLog('数据库管理','修改远程MySQL服务器[{}:{}]'.format(get.db_host,get.db_port))
+            return public.returnMsg(True,'修改成功!')
+        return public.returnMsg(False,'修改失败： {}'.format(result))
+
+
+    def AddCloudDatabase(self,get):
+        '''
+            @name 添加远程数据库
+            @author hwliang<2022-01-06>
+            @param db_host<string> 服务器地址
+            @param db_port<port> 数据库端口
+            @param db_user<string> 用户名
+            @param db_name<string> 数据库名称
+            @param db_password<string> 数据库密码
+            @param db_ps<string> 数据库备注
+            @return dict
+        '''
+        if not hasattr(get,'db_host'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        if not hasattr(get,'db_port'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        if not hasattr(get,'db_user'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        if not hasattr(get,'db_name'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        if not hasattr(get,'db_password'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+        if not hasattr(get,'db_ps'):
+            return public.returnMsg(False,'参数传递错误，请重试!')
+
+        #检查数据库是否能连接
+        res = self.CheckCloudDatabase(get)
+        if isinstance(res,dict): return res
+
+        if public.M('databases').where('name=?',(get.db_name,)).count():
+            return public.returnMsg(False,'已存在同名的数据库: ['+get.db_name+']')
+        get.db_port = int(get.db_port)
+        conn_config = {
+            'db_host':get.db_host,
+            'db_port':get.db_port,
+            'db_user':get.db_user,
+            'db_password':get.db_password,
+            'db_name':get.db_name
+        }
+
+        pdata = {
+            'name': get.db_name,
+            'ps': get.db_ps,
+            'conn_config': json.dumps(conn_config),
+            'db_type': '1',
+            'username': get.db_user,
+            'password': get.db_password,
+            'accept': '127.0.0.1',
+            'addtime': time.strftime('%Y-%m-%d %X',time.localtime()),
+            'pid': 0
+        }
+
+        result = public.M('databases').insert(pdata)
+        if isinstance(result,int):
+            public.WriteLog('数据库管理','添加远程MySQL数据库[%s]成功' % (get.db_name))
+            return public.returnMsg(True,'添加成功!')
+        return public.returnMsg(False,'添加失败： {}'.format(result))
+
+
+    def CheckCloudDatabase(self,conn_config):
+        '''
+            @name 检查远程数据库信息是否正确
+            @author hwliang<2022-01-06>
+            @param conn_config<dict> 连接信息
+                db_host<string> 服务器地址
+                db_port<port> 数据库端口
+                db_user<string> 用户名
+                db_name<string> 数据库名称
+                db_password<string> 数据库密码
+            @return True / dict
+        '''
+        try:
+            import db_mysql
+            if not 'db_name' in conn_config: conn_config['db_name'] = None
+            mysql_obj = db_mysql.panelMysql().set_host(conn_config['db_host'],conn_config['db_port'],conn_config['db_name'],conn_config['db_user'],conn_config['db_password'])
+            result = mysql_obj.query("show databases")
+            if not conn_config['db_name']: return True
+            for i in result:
+                if i[0] == conn_config['db_name']:
+                    return True
+            return public.returnMsg(False,'指定数据库不存在!')
+        except Exception as ex:
+            res  = self.GetMySQLError(ex)
+            if not res: res = str(ex)
+            return public.returnMsg(False,res)
+
+    def GetMySQLError(self,e):
+        res = ''
+        if e.args[0] == 1045:
+            res = '用户名或密码错误!'
+        if e.args[0] == 1049:
+            res = '数据库不存在!'
+        if e.args[0] == 1044:
+            res = '没有指定数据库的访问权限，或指定数据库不存在!'
+        if e.args[0] == 1062:
+            res = '数据库已存在!'
+        if e.args[0] == 1146:
+            res = '数据表不存在!'
+        if e.args[0] == 2003:
+            res = '数据库服务器连接失败!'
+        if res:
+            res = res + "<pre>" + str(e) + "</pre>"
+        else:
+            res = str(e)
+        return res
+
+    #添加数据库
+    def AddDatabase(self,get):
+        # try:
+        data_name = get['name'].strip().lower()
+        if not data_name: return public.returnMsg(False,'数据库名称不能为空')
+
+        if self.CheckRecycleBin(data_name): return public.returnMsg(False,'数据库['+data_name+']已在回收站，请从回收站恢复!')
+        if len(data_name) > 16: return public.returnMsg(False, 'DATABASE_NAME_LEN')
+        reg = r"^[\w\.-]+$"
+        username = get.db_user.strip()
+        if not username: return public.returnMsg(False,'数据库用户名不能为空')
+        if not re.match(reg, data_name): return public.returnMsg(False,'DATABASE_NAME_ERR_T')
+        if not re.match(reg, username): return public.returnMsg(False,'数据库名称不合法!')
+        if not hasattr(get,'db_user'): get.db_user = data_name
+
+        checks = ['root','mysql','test','sys','panel_logs']
+        if username in checks or len(username) < 1: return public.returnMsg(False,'数据库用户名不合法!')
+        if data_name in checks or len(data_name) < 1: return public.returnMsg(False,'数据库名称不合法!')
+        data_pwd = get['password']
+        if len(data_pwd)<1:
+            data_pwd = public.md5(str(time.time()))[0:16]
+
+        sql = public.M('databases')
+        if sql.where("name=? or username=?",(data_name,username)).count(): return public.returnMsg(False,'DATABASE_NAME_EXISTS')
+
+        address = get['address'].strip()
+        if address in ['','ip']: return public.returnMsg(False,'访问权限为【指定IP】时，需要填写IP地址!')
+
+        user = '是'
+        password = data_pwd
+
+        codeing = get['codeing']
+
+        wheres={
+                'utf8'      :   'utf8_general_ci',
+                'utf8mb4'   :   'utf8mb4_general_ci',
+                'gbk'       :   'gbk_chinese_ci',
+                'big5'      :   'big5_chinese_ci'
+                }
+        codeStr=wheres[codeing]
+        #添加MYSQL
+        self.sid = get.get('sid/d',0)
+        mysql_obj = public.get_mysql_obj_by_sid(self.sid)
+
+        #从MySQL验证是否存在
+        if self.database_exists_for_mysql(mysql_obj,data_name):  return public.returnMsg(False,'指定数据库已在MySQL中存在，请换个名称!')
+
+        result = mysql_obj.execute("create database `" + data_name + "` DEFAULT CHARACTER SET " + codeing + " COLLATE " + codeStr)
+        isError = self.IsSqlError(result)
+        if  isError != None: return isError
+        mysql_obj.execute("drop user '" + username + "'@'localhost'")
+        for a in address.split(','):
+            mysql_obj.execute("drop user '" + username + "'@'" + a + "'")
+
+        self.__CreateUsers(data_name,username,password,address)
+
+        if get['ps'] == '': get['ps']=public.getMsg('INPUT_PS')
+        get['ps'] = public.xssencode2(get['ps'])
+        addTime = time.strftime('%Y-%m-%d %X',time.localtime())
+
+        pid = 0
+        if hasattr(get,'pid'): pid = get.pid
+        #添加入SQLITE
+        db_type = 0
+        if self.sid: db_type = 2
+        sql.add('pid,sid,db_type,name,username,password,accept,ps,addtime',(pid,self.sid,db_type,data_name,username,password,address,get['ps'],addTime))
+        public.WriteLog("TYPE_DATABASE", 'DATABASE_ADD_SUCCESS',(data_name,))
+        return public.returnMsg(True,'ADD_SUCCESS')
+        # except Exception as ex:
+        #     public.WriteLog("TYPE_DATABASE",'DATABASE_ADD_ERR', (data_name,str(ex)))
+        #     return public.returnMsg(False,'ADD_ERROR')
+
+
+    #判断数据库是否存在—从MySQL
+    def database_exists_for_mysql(self,mysql_obj,dataName):
+        databases_tmp = self.map_to_list(mysql_obj.query('show databases'))
+        if not isinstance(databases_tmp,list):
+            return True
+
+        for i in databases_tmp:
+            if i[0] == dataName:
+                return True
+        return False
+
+    #创建用户
+    def __CreateUsers(self,dbname,username,password,address):
+        mysql_obj = public.get_mysql_obj_by_sid(self.sid)
+        mysql_obj.execute("CREATE USER `%s`@`localhost` IDENTIFIED BY '%s'" % (username,password))
+        result = mysql_obj.execute("grant all privileges on `%s`.* to `%s`@`localhost`" % (dbname,username))
+        if str(result).find('1044') != -1:
+            mysql_obj.execute("grant SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER,CREATE TEMPORARY TABLES,LOCK TABLES,EXECUTE,CREATE VIEW,SHOW VIEW,EVENT,TRIGGER on `%s`.* to `%s`@`localhost`" % (dbname,username))
+        for a in address.split(','):
+            mysql_obj.execute("CREATE USER `%s`@`%s` IDENTIFIED BY '%s'" % (username,a,password))
+            result = mysql_obj.execute("grant all privileges on `%s`.* to `%s`@`%s`" % (dbname,username,a))
+            if str(result).find('1044') != -1:
+                mysql_obj.execute("grant SELECT,INSERT,UPDATE,DELETE,CREATE,DROP,INDEX,ALTER,CREATE TEMPORARY TABLES,LOCK TABLES,EXECUTE,CREATE VIEW,SHOW VIEW,EVENT,TRIGGER on `%s`.* to `%s`@`%s`" % (dbname,username,a))
+        mysql_obj.execute("flush privileges")
+
+    #检查是否在回收站
+    def CheckRecycleBin(self,name):
+        try:
+            u_name = self.db_name_to_unicode(name)
+            for n in os.listdir('/www/.Recycle_bin'):
+                if n.find('BTDB_'+name+'_t_') != -1: return True
+                if n.find('BTDB_'+u_name+'_t_') != -1: return True
+            return False
+        except:
+            return False
+
+    #检测数据库执行错误
+    def IsSqlError(self,mysqlMsg):
+        mysqlMsg=str(mysqlMsg)
+        if "MySQLdb" in mysqlMsg: return public.returnMsg(False,'DATABASE_ERR_MYSQLDB')
+        if "2002," in mysqlMsg or '2003,' in mysqlMsg: return public.returnMsg(False,'DATABASE_ERR_CONNECT')
+        if "using password:" in mysqlMsg: return public.returnMsg(False,'DATABASE_ERR_PASS')
+        if "Connection refused" in mysqlMsg: return public.returnMsg(False,'DATABASE_ERR_CONNECT')
+        if "1133" in mysqlMsg: return public.returnMsg(False,'DATABASE_ERR_NOT_EXISTS')
+        if "libmysqlclient" in mysqlMsg:
+            self.rep_lnk()
+            public.ExecShell("pip uninstall mysql-python -y")
+            public.ExecShell("pip install pymysql")
+            public.writeFile('data/restart.pl','True')
+            return public.returnMsg(False,"执行失败，已尝试自动修复，请稍候重试!")
+        return None
+
+    def rep_lnk(self):
+        shell_cmd = '''
+Setup_Path=/www/server/mysql
+#删除软链
+DelLink()
+{
+	rm -f /usr/bin/mysql*
+	rm -f /usr/lib/libmysql*
+	rm -f /usr/lib64/libmysql*
+    rm -f /usr/bin/myisamchk
+    rm -f /usr/bin/mysqldump
+    rm -f /usr/bin/mysql
+    rm -f /usr/bin/mysqld_safe
+    rm -f /usr/bin/mysql_config
+}
+#设置软件链
+SetLink()
+{
+    ln -sf ${Setup_Path}/bin/mysql /usr/bin/mysql
+    ln -sf ${Setup_Path}/bin/mysqldump /usr/bin/mysqldump
+    ln -sf ${Setup_Path}/bin/myisamchk /usr/bin/myisamchk
+    ln -sf ${Setup_Path}/bin/mysqld_safe /usr/bin/mysqld_safe
+    ln -sf ${Setup_Path}/bin/mysqlcheck /usr/bin/mysqlcheck
+	ln -sf ${Setup_Path}/bin/mysql_config /usr/bin/mysql_config
+
+	rm -f /usr/lib/libmysqlclient.so.16
+	rm -f /usr/lib64/libmysqlclient.so.16
+	rm -f /usr/lib/libmysqlclient.so.18
+	rm -f /usr/lib64/libmysqlclient.so.18
+	rm -f /usr/lib/libmysqlclient.so.20
+	rm -f /usr/lib64/libmysqlclient.so.20
+	rm -f /usr/lib/libmysqlclient.so.21
+	rm -f /usr/lib64/libmysqlclient.so.21
+
+	if [ -f "${Setup_Path}/lib/libmysqlclient.so.18" ];then
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.18 /usr/lib/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.18 /usr/lib64/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.18 /usr/lib/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.18 /usr/lib64/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.18 /usr/lib/libmysqlclient.so.20
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.18 /usr/lib64/libmysqlclient.so.20
+	elif [ -f "${Setup_Path}/lib/mysql/libmysqlclient.so.18" ];then
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.18 /usr/lib/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.18 /usr/lib64/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.18 /usr/lib/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.18 /usr/lib64/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.18 /usr/lib/libmysqlclient.so.20
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.18 /usr/lib64/libmysqlclient.so.20
+	elif [ -f "${Setup_Path}/lib/libmysqlclient.so.16" ];then
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.16 /usr/lib/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.16 /usr/lib64/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.16 /usr/lib/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.16 /usr/lib64/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.16 /usr/lib/libmysqlclient.so.20
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.16 /usr/lib64/libmysqlclient.so.20
+	elif [ -f "${Setup_Path}/lib/mysql/libmysqlclient.so.16" ];then
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.16 /usr/lib/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.16 /usr/lib64/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.16 /usr/lib/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.16 /usr/lib64/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.16 /usr/lib/libmysqlclient.so.20
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.16 /usr/lib64/libmysqlclient.so.20
+	elif [ -f "${Setup_Path}/lib/libmysqlclient_r.so.16" ];then
+		ln -sf ${Setup_Path}/lib/libmysqlclient_r.so.16 /usr/lib/libmysqlclient_r.so.16
+		ln -sf ${Setup_Path}/lib/libmysqlclient_r.so.16 /usr/lib64/libmysqlclient_r.so.16
+	elif [ -f "${Setup_Path}/lib/mysql/libmysqlclient_r.so.16" ];then
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient_r.so.16 /usr/lib/libmysqlclient_r.so.16
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient_r.so.16 /usr/lib64/libmysqlclient_r.so.16
+	elif [ -f "${Setup_Path}/lib/libmysqlclient.so.20" ];then
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.20 /usr/lib/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.20 /usr/lib64/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.20 /usr/lib/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.20 /usr/lib64/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.20 /usr/lib/libmysqlclient.so.20
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.20 /usr/lib64/libmysqlclient.so.20
+	elif [ -f "${Setup_Path}/lib/libmysqlclient.so.21" ];then
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.21 /usr/lib/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.21 /usr/lib64/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.21 /usr/lib/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.21 /usr/lib64/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.21 /usr/lib/libmysqlclient.so.20
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.21 /usr/lib64/libmysqlclient.so.20
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.21 /usr/lib/libmysqlclient.so.21
+		ln -sf ${Setup_Path}/lib/libmysqlclient.so.21 /usr/lib64/libmysqlclient.so.21
+	elif [ -f "${Setup_Path}/lib/libmariadb.so.3" ]; then
+		ln -sf ${Setup_Path}/lib/libmariadb.so.3 /usr/lib/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/libmariadb.so.3 /usr/lib64/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/libmariadb.so.3 /usr/lib/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/libmariadb.so.3 /usr/lib64/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/libmariadb.so.3 /usr/lib/libmysqlclient.so.20
+		ln -sf ${Setup_Path}/lib/libmariadb.so.3 /usr/lib64/libmysqlclient.so.20
+		ln -sf ${Setup_Path}/lib/libmariadb.so.3 /usr/lib/libmysqlclient.so.21
+		ln -sf ${Setup_Path}/lib/libmariadb.so.3 /usr/lib64/libmysqlclient.so.21
+	elif [ -f "${Setup_Path}/lib/mysql/libmysqlclient.so.20" ];then
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.20 /usr/lib/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.20 /usr/lib64/libmysqlclient.so.16
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.20 /usr/lib/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.20 /usr/lib64/libmysqlclient.so.18
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.20 /usr/lib/libmysqlclient.so.20
+		ln -sf ${Setup_Path}/lib/mysql/libmysqlclient.so.20 /usr/lib64/libmysqlclient.so.20
+	fi
+}
+DelLink
+SetLink
+'''
+        return public.ExecShell(shell_cmd)
+
+    #删除数据库
+    def DeleteDatabase(self,get):
+        # try:
+        id=get['id']
+        name = get['name']
+        find = public.M('databases').where("id=?",(id,)).field('id,sid,pid,name,username,password,accept,ps,addtime,db_type').find()
+        self.sid = find['sid']
+        if find['db_type'] in ['0',0] or self.sid: # 删除本地数据库
+            if os.path.exists('data/recycle_bin_db.pl') and not self.sid: return self.DeleteToRecycleBin(name)
+            accept = find['accept']
+            username = find['username']
+            #删除MYSQL
+            mysql_obj = public.get_mysql_obj_by_sid(self.sid)
+            result = mysql_obj.execute("drop database `" + name + "`")
+            isError=self.IsSqlError(result)
+            if  isError != None: return isError
+            users = mysql_obj.query("select Host from mysql.user where User='" + username + "' AND Host!='localhost'")
+            mysql_obj.execute("drop user '" + username + "'@'localhost'")
+            for us in users:
+                mysql_obj.execute("drop user '" + username + "'@'" + us[0] + "'")
+            mysql_obj.execute("flush privileges")
+        #删除SQLITE
+        public.M('databases').where("id=?",(id,)).delete()
+        public.WriteLog("TYPE_DATABASE", 'DATABASE_DEL_SUCCESS',(name,))
+        return public.returnMsg(True, 'DEL_SUCCESS')
+        # except Exception as ex:
+        #     if str(ex).find('public.PanelError') != -1:
+        #         raise ex
+        #     public.WriteLog("TYPE_DATABASE",'DATABASE_DEL_ERR',(get.name , str(ex)))
+        #     return public.returnMsg(False,'DEL_ERROR')
+
+
+    def db_name_to_unicode(self,name):
+        '''
+            @name 中文数据库名转换为Unicode编码
+            @author hwliang<2021-12-20>
+            @param name<string> 数据库名
+            @return name<string> Unicode编码的数据库名
+        '''
+        name = name.replace('.','@002e')
+        name = name.replace('-','@002d')
+        return name.encode("unicode_escape").replace(b"\\u",b"@").decode()
+
+    #删除数据库到回收站
+    def DeleteToRecycleBin(self,name):
+        import json
+        data = public.M('databases').where("name=?",(name,)).field('id,pid,name,username,password,accept,ps,addtime').find()
+        username = data['username']
+        panelMysql.panelMysql().execute("drop user '" + username + "'@'localhost'")
+        users = panelMysql.panelMysql().query("select Host from mysql.user where User='" + username + "' AND Host!='localhost'")
+        if isinstance(users,str):
+            return public.returnMsg(False,'删除失败,连接数据库失败!')
+        for us in users:
+            panelMysql.panelMysql().execute("drop user '" + username + "'@'" + us[0] + "'")
+        panelMysql.panelMysql().execute("flush privileges")
+        rPath = '/www/.Recycle_bin/'
+        data['rmtime'] = int(time.time())
+        u_name = self.db_name_to_unicode(name)
+        rm_path = '{}/BTDB_{}_t_{}'.format(rPath,u_name,data['rmtime'])
+        if os.path.exists(rm_path): rm_path += '.1'
+        rm_config_file = '{}/config.json'.format(rm_path)
+        datadir = public.get_datadir()
+
+        db_path = '{}/{}'.format(datadir,u_name)
+        if not os.path.exists(db_path):
+            return public.returnMsg(False,'指定数据库数据不存在!: {}'.format(db_path))
+
+        public.ExecShell("mv -f {} {}".format(db_path,rm_path))
+        if not os.path.exists(rm_path):
+            return public.returnMsg(False,'移动数据库数据到回收站失败!')
+        public.writeFile(rm_config_file,json.dumps(data))
+        # public.writeFile(rPath + 'BTDB_' + name +'_t_' + str(time.time()),json.dumps(data))
+        public.M('databases').where("name=?",(name,)).delete()
+        public.WriteLog("TYPE_DATABASE", 'DATABASE_DEL_SUCCESS',(name,))
+        return public.returnMsg(True,'RECYCLE_BIN_DB')
+
+    #永久删除数据库
+    def DeleteTo(self,filename):
+        import json
+        if os.path.isfile(filename):
+            data = json.loads(public.readFile(filename))
+            if public.M('databases').where("name=?",( data['name'],)).count():
+                os.remove(filename)
+                return public.returnMsg(True,'DEL_SUCCESS')
+            result = panelMysql.panelMysql().execute("drop database `" + data['name'] + "`")
+            isError=self.IsSqlError(result)
+            if  isError != None: return isError
+            panelMysql.panelMysql().execute("drop user '" + data['username'] + "'@'localhost'")
+            users = panelMysql.panelMysql().query("select Host from mysql.user where User='" + data['username'] + "' AND Host!='localhost'")
+            for us in users:
+                panelMysql.panelMysql().execute("drop user '" + data['username'] + "'@'" + us[0] + "'")
+            panelMysql.panelMysql().execute("flush privileges")
+            os.remove(filename)
+        else:
+            import shutil
+            if os.path.exists(filename):
+                data = json.loads(public.readFile(filename + '/config.json'))
+                shutil.rmtree(filename)
+        try:
+            public.WriteLog("TYPE_DATABASE", 'DATABASE_DEL_SUCCESS',(data['name'],))
+        except:
+            pass
+        return public.returnMsg(True,'DEL_SUCCESS')
+
+    #恢复数据库
+    def RecycleDB(self,filename):
+        import json
+        _isdir = False
+        if os.path.isfile(filename):
+            data = json.loads(public.readFile(filename))
+        else:
+            re_config_file = filename + '/config.json'
+            data = json.loads(public.readFile(re_config_file))
+            u_name = self.db_name_to_unicode(data['name'])
+            db_path = "{}/{}".format(public.get_datadir(),u_name)
+            if os.path.exists(db_path):
+                return public.returnMsg(False,'当前数据库中存在同名数据库，为保证数据安全，停止恢复!')
+            _isdir = True
+
+        if public.M('databases').where("name=?",( data['name'],)).count():
+            if not _isdir: os.remove(filename)
+            return public.returnMsg(True,'RECYCLEDB')
+
+
+        if not _isdir:
+            os.remove(filename)
+        else:
+            public.ExecShell('mv -f {} {}'.format(filename,db_path))
+            if not os.path.exists(db_path):
+                return public.returnMsg(False,'数据恢复失败!')
+            db_config_file = "{}/config.json".format(db_path)
+            if os.path.exists(db_config_file): os.remove(db_config_file)
+
+            # 设置文件权限
+            public.ExecShell("chown -R mysql:mysql {}".format(db_path))
+            public.ExecShell("chmod -R 660 {}".format(db_path))
+            public.ExecShell("chmod  700 {}".format(db_path))
+
+        self.__CreateUsers(data['name'],data['username'],data['password'],data['accept'])
+        public.M('databases').add('id,pid,name,username,password,accept,ps,addtime',(data['id'],data['pid'],data['name'],data['username'],data['password'],data['accept'],data['ps'],data['addtime']))
+        return public.returnMsg(True,"RECYCLEDB")
+
+    #设置ROOT密码
+    def SetupPassword(self,get):
+        password = get['password'].strip()
+        try:
+            if not password: return public.returnMsg(False,'root密码不能为空')
+            rep = "^[\w%@#!\.\+-~]+$"
+            if not re.match(rep, password): return public.returnMsg(False,  '数据库密码不能带有特殊符号')
+            if re.search(r"[\u4e00-\u9fa5]+",password): return public.returnMsg(False,  '数据库密码不能包含中文')
+            self.sid = get.get('sid/d',0)
+            #修改MYSQL
+            mysql_obj = public.get_mysql_obj_by_sid(self.sid)
+            result = mysql_obj.query("show databases")
+            isError=self.IsSqlError(result)
+            is_modify = True
+            if  isError != None and not self.sid:
+                #尝试使用新密码
+                public.M('config').where("id=?",(1,)).setField('mysql_root',password)
+                result = mysql_obj.query("show databases")
+                isError=self.IsSqlError(result)
+                if  isError != None:
+                    public.ExecShell("cd /www/server/panel && "+public.get_python_bin()+" tools.py root \"" + password + "\"")
+                    is_modify = False
+
+            if is_modify:
+                admin_user = 'root'
+                m_version = public.readFile(public.GetConfigValue('setup_path') + '/mysql/version.pl')
+                if self.sid:
+                    admin_user = mysql_obj._USER
+                    m_version = mysql_obj.query('select version();')[0][0]
+
+                if m_version.find('5.7') == 0  or m_version.find('8.0') == 0:
+                    accept = self.map_to_list(mysql_obj.query("select Host from mysql.user where User='{}'".format(admin_user)))
+                    for my_host in accept:
+                        mysql_obj.execute("UPDATE mysql.user SET authentication_string='' WHERE User='{}' and Host='{}'".format(admin_user,my_host[0]))
+                        mysql_obj.execute("ALTER USER `%s`@`%s` IDENTIFIED BY '%s'" % (admin_user,my_host[0],password))
+                elif m_version.find('10.5.') != -1 or m_version.find('10.4.') != -1:
+                    accept = self.map_to_list(mysql_obj.query("select Host from mysql.user where User='{}'".format(admin_user)))
+                    for my_host in accept:
+                        mysql_obj.execute("ALTER USER `%s`@`%s` IDENTIFIED BY '%s'" % (admin_user,my_host[0],password))
+                else:
+                    result = mysql_obj.execute("update mysql.user set Password=password('" + password + "') where User='{}'".format(admin_user))
+                mysql_obj.execute("flush privileges")
+
+            msg = public.getMsg('DATABASE_ROOT_SUCCESS')
+            #修改SQLITE
+            if self.sid:
+                public.M('database_servers').where('id=?',self.sid).setField('db_password',password)
+                public.WriteLog("TYPE_DATABASE", "修改远程MySQL服务器管理员密码")
+            else:
+                public.M('config').where("id=?",(1,)).setField('mysql_root',password)
+                public.WriteLog("TYPE_DATABASE", "DATABASE_ROOT_SUCCESS")
+                session['config']['mysql_root']=password
+            return public.returnMsg(True,msg)
+        except Exception as ex:
+            return public.returnMsg(False,str(ex))
+
+    #修改用户密码
+    def ResDatabasePassword(self,get):
+        # try:
+        newpassword = get['password']
+        username = get['name']
+        id = get['id']
+        if not newpassword: return public.returnMsg(False,'数据库[%s]密码不能为空' % username)
+        db_find = public.M('databases').where('id=?',(id,)).find()
+        name = db_find['name']
+
+        rep = "^[\w%@#!\.\+-~]+$"
+        if  not re.match(rep, newpassword): return public.returnMsg(False, '数据库密码不能带有特殊符号')
+        #修改MYSQL
+        self.sid = db_find['sid']
+        if self.sid and username == 'root': return public.returnMsg(False,'不能修改远程数据库的root密码')
+        mysql_obj = public.get_mysql_obj_by_sid(self.sid)
+        m_version = public.readFile(public.GetConfigValue('setup_path') + '/mysql/version.pl')
+        if self.sid:
+            m_version = mysql_obj.query('select version();')[0][0]
+
+        if m_version.find('5.7') == 0  or m_version.find('8.0') == 0 :
+            accept = self.map_to_list(mysql_obj.query("select Host from mysql.user where User='" + name + "' AND Host!='localhost'"))
+            mysql_obj.execute("update mysql.user set authentication_string='' where User='" + username + "'")
+            result = mysql_obj.execute("ALTER USER `%s`@`localhost` IDENTIFIED BY '%s'" % (username,newpassword))
+            for my_host in accept:
+                mysql_obj.execute("ALTER USER `%s`@`%s` IDENTIFIED BY '%s'" % (username,my_host[0],newpassword))
+        elif m_version.find('10.5.') != -1 or m_version.find('10.4.') != -1:
+            accept = self.map_to_list(mysql_obj.query("select Host from mysql.user where User='" + name + "' AND Host!='localhost'"))
+            result = mysql_obj.execute("ALTER USER `%s`@`localhost` IDENTIFIED BY '%s'" % (username,newpassword))
+            for my_host in accept:
+                mysql_obj.execute("ALTER USER `%s`@`%s` IDENTIFIED BY '%s'" % (username,my_host[0],newpassword))
+        else:
+            result = mysql_obj.execute("update mysql.user set Password=password('" + newpassword + "') where User='" + username + "'")
+
+        isError=self.IsSqlError(result)
+        if  isError != None: return isError
+
+        mysql_obj.execute("flush privileges")
+        #if result==False: return public.returnMsg(False,'DATABASE_PASS_ERR_NOT_EXISTS')
+        #修改SQLITE
+        if int(id) > 0:
+            public.M('databases').where("id=?",(id,)).setField('password',newpassword)
+        else:
+            public.M('config').where("id=?",(id,)).setField('mysql_root',newpassword)
+            session['config']['mysql_root'] = newpassword
+
+        public.WriteLog("TYPE_DATABASE",'DATABASE_PASS_SUCCESS',(name,))
+        return public.returnMsg(True,'DATABASE_PASS_SUCCESS',(name,))
+        # except Exception as ex:
+        #     if str(ex).find('public.PanelError') != -1:
+        #         raise ex
+        #     import traceback
+        #     public.WriteLog("TYPE_DATABASE", 'DATABASE_PASS_ERROR',(username,traceback.format_exc(limit=True).replace('\n','<br>')))
+        #     return public.returnMsg(False,'DATABASE_PASS_ERROR',(name,))
+
+    #备份
+    def ToBackup(self,get):
+        #try:
+
+        id = get['id']
+        db_find = public.M('databases').where("id=?",(id,)).find()
+        name = db_find['name']
+        fileName = name + '_' + time.strftime('%Y%m%d_%H%M%S',time.localtime()) + '.sql.gz'
+        backupName = session['config']['backup_path'] + '/database/' + fileName
+        mysqldump_bin = public.get_mysqldump_bin()
+        if db_find['db_type'] in ['0',0]:
+            # 本地数据库
+            result = panelMysql.panelMysql().execute("show databases")
+            isError=self.IsSqlError(result)
+            if isError: return isError
+
+            root = public.M('config').where('id=?',(1,)).getField('mysql_root')
+            if not os.path.exists(session['config']['backup_path'] + '/database'): public.ExecShell('mkdir -p ' + session['config']['backup_path'] + '/database')
+            if not self.mypass(True, root):return public.returnMsg(False, '数据库配置文件获取失败,请检查MySQL配置文件是否存在')
+            try:
+                password = public.M('config').where('id=?',(1,)).getField('mysql_root')
+                os.environ["MYSQL_PWD"] = str(password)
+                public.ExecShell(mysqldump_bin + " -R -E --triggers=false --default-character-set="+ public.get_database_character(name) +" --force --opt \"" + name + "\"  -u root -p"+str(password)+" | gzip > " + backupName)
+            except Exception as e:
+                raise
+            finally:
+                os.environ["MYSQL_PWD"] = ""
+            self.mypass(False, root)
+        elif db_find['db_type'] in ['1',1]:
+            # 远程数据库
+            try:
+                conn_config = json.loads(db_find['conn_config'])
+                res = self.CheckCloudDatabase(conn_config)
+                if isinstance(res,dict): return res
+                os.environ["MYSQL_PWD"] = str(conn_config['db_password'])
+                public.ExecShell(mysqldump_bin + " -h "+ conn_config['db_host'] +" -P "+ str(int(conn_config['db_port'])) +" -R -E --triggers=false --default-character-set=" + public.get_database_character(name) + " --force --opt \"" + str(db_find['name']) + "\"  -u "+ str(conn_config['db_user']) +" -p"+str(conn_config['db_password'])+" | gzip > " + backupName)
+            except Exception as e:
+                raise
+            finally:
+                os.environ["MYSQL_PWD"] = ""
+        elif db_find['db_type'] in ['2',2]:
+            try:
+                conn_config = public.M('database_servers').where('id=?',db_find['sid']).find()
+                res = self.CheckCloudDatabase(conn_config)
+                if isinstance(res,dict): return res
+                os.environ["MYSQL_PWD"] = str(conn_config['db_password'])
+                public.ExecShell(mysqldump_bin + " -h "+ conn_config['db_host'] +" -P "+ str(int(conn_config['db_port'])) +" -R -E --triggers=false --default-character-set=" + public.get_database_character(name) + " --force --opt \"" + str(db_find['name']) + "\"  -u "+ str(conn_config['db_user']) +" -p"+str(conn_config['db_password'])+" | gzip > " + backupName)
+            except Exception as e:
+                raise
+            finally:
+                os.environ["MYSQL_PWD"] = ""
+        else:
+            return public.returnMsg(False,'不支持的数据库类型')
+
+        if not os.path.exists(backupName): return public.returnMsg(False,'BACKUP_ERROR')
+
+        sql = public.M('backup')
+        addTime = time.strftime('%Y-%m-%d %X',time.localtime())
+        sql.add('type,name,pid,filename,size,addtime',(1,fileName,id,backupName,0,addTime))
+        public.WriteLog("TYPE_DATABASE", "DATABASE_BACKUP_SUCCESS",(name,))
+        return public.returnMsg(True, 'BACKUP_SUCCESS')
+        #except Exception as ex:
+            #public.WriteLog("数据库管理", "备份数据库[" + name + "]失败 => "  +  str(ex))
+            #return public.returnMsg(False,'备份失败!')
+
+    #删除备份文件
+    def DelBackup(self,get):
+        try:
+            id = get.id
+            where = "id=?"
+            filename = public.M('backup').where(where,(id,)).getField('filename')
+            if os.path.exists(filename): os.remove(filename)
+            name=''
+            if filename == 'qiniu':
+                name = public.M('backup').where(where,(id,)).getField('name')
+                public.ExecShell(public.get_python_bin() + " "+public.GetConfigValue('setup_path') + '/panel/script/backup_qiniu.py delete_file ' + name)
+
+            public.M('backup').where(where,(id,)).delete()
+            public.WriteLog("TYPE_DATABASE", 'DATABASE_BACKUP_DEL_SUCCESS',(name,filename))
+            return public.returnMsg(True, 'DEL_SUCCESS')
+        except Exception as ex:
+            public.WriteLog("TYPE_DATABASE", 'DATABASE_BACKUP_DEL_ERR',(name,filename,str(ex)))
+            return public.returnMsg(False,'DEL_ERROR')
+
+    #导入
+    def InputSql(self,get):
+        #try:
+
+        name = get['name']
+        file = get['file']
+        root = public.M('config').where('id=?',(1,)).getField('mysql_root')
+        tmp = file.split('.')
+        exts = ['sql','gz','zip']
+        ext = tmp[len(tmp) -1]
+        if ext not in exts:
+            return public.returnMsg(False, 'DATABASE_INPUT_ERR_FORMAT')
+        db_find = public.M('databases').where('name=?',name).find()
+        mysql_obj = public.get_mysql_obj_by_sid(db_find['sid'])
+        result =mysql_obj.execute("show databases")
+        isError=self.IsSqlError(result)
+        if isError: return isError
+        isgzip = False
+        mysql_bin = public.get_mysql_bin()
+        if ext != 'sql':
+            tmp = file.split('/')
+            tmpFile = tmp[len(tmp)-1]
+            tmpFile = tmpFile.replace('.sql.' + ext, '.sql')
+            tmpFile = tmpFile.replace('.' + ext, '.sql')
+            tmpFile = tmpFile.replace('tar.', '')
+            # 面板默认备份路径
+            backupPath = session['config']['backup_path'] + '/database'
+            input_path = os.path.join(backupPath, tmpFile)
+            # 备份文件的路径
+            input_path2 = os.path.join(os.path.dirname(file), tmpFile)
+            if ext == 'zip':
+                public.ExecShell("cd "  +  backupPath  +  " && unzip " + '"'+file+'"')
+            else:
+                public.ExecShell("cd "  +  backupPath  +  " && tar zxf " +  '"'+file+'"')
+                if not os.path.exists(input_path):
+                    # 兼容从备份文件所在目录恢复
+                    if not os.path.exists(input_path2):
+                        public.ExecShell("cd "  +  backupPath  +  " && gunzip -q " +  '"'+file+'"')
+                        isgzip = True
+                    else:
+                        input_path = input_path2
+            if not os.path.exists(input_path) or tmpFile == '':
+                if tmpFile and os.path.isfile(input_path2):
+                    input_path = input_path2
+                else:
+                    return public.returnMsg(False, 'FILE_NOT_EXISTS',(tmpFile,))
+
+            try:
+                if db_find['db_type'] in ['0',0]:
+                    password = public.M('config').where('id=?',(1,)).getField('mysql_root')
+                    os.environ["MYSQL_PWD"] = str(password)
+                    public.ExecShell(mysql_bin + " -uroot -p" + str(password) + " --force \"" + name + "\" < " +'"'+ input_path +'"')
+                elif db_find['db_type'] in ['1',1]:
+                    conn_config = json.loads(db_find['conn_config'])
+                    os.environ["MYSQL_PWD"] = str(conn_config['db_password'])
+                    public.ExecShell(mysql_bin + " -h "+ conn_config['db_host'] +" -P "+str(int(conn_config['db_port']))+" -u"+str(conn_config['db_user'])+" -p" + str(conn_config['db_password']) + " --force \"" + name + "\" < " +'"'+ input_path +'"')
+                elif db_find['db_type'] in ['2',2]:
+                    conn_config = public.M('database_servers').where('id=?',db_find['sid']).find()
+                    os.environ["MYSQL_PWD"] = str(conn_config['db_password'])
+                    public.ExecShell(mysql_bin + " -h "+ conn_config['db_host'] +" -P "+str(int(conn_config['db_port']))+" -u"+str(conn_config['db_user'])+" -p" + str(conn_config['db_password']) + " --force \"" + name + "\" < " +'"'+ input_path +'"')
+            except Exception as e:
+                raise
+            finally:
+                os.environ["MYSQL_PWD"] = ""
+
+            if isgzip:
+                public.ExecShell('cd ' +os.path.dirname(input_path)+ ' && gzip ' + file.split('/')[-1][:-3])
+            else:
+                public.ExecShell("rm -f " +  input_path)
+        else:
+            try:
+                if db_find['db_type'] in ['0',0]:
+                    password = public.M('config').where('id=?',(1,)).getField('mysql_root')
+                    os.environ["MYSQL_PWD"] = str(password)
+                    public.ExecShell(mysql_bin + " -uroot -p" + root + " --force \"" + name + "\" < " +'"'+ file +'"')
+                elif db_find['db_type'] in ['1',1]:
+                    conn_config = json.loads(db_find['conn_config'])
+                    os.environ["MYSQL_PWD"] = str(conn_config['db_password'])
+                    public.ExecShell(mysql_bin + " -h "+ conn_config['db_host'] +" -P "+str(int(conn_config['db_port']))+" -u"+str(conn_config['db_user'])+" -p" + str(conn_config['db_password']) + " --force \"" + name + "\" < " +'"'+ file +'"')
+                elif db_find['db_type'] in ['2',2]:
+                    conn_config = public.M('database_servers').where('id=?',db_find['sid']).find()
+                    os.environ["MYSQL_PWD"] = str(conn_config['db_password'])
+                    public.ExecShell(mysql_bin + " -h "+ conn_config['db_host'] +" -P "+str(int(conn_config['db_port']))+" -u"+str(conn_config['db_user'])+" -p" + str(conn_config['db_password']) + " --force \"" + name + "\" < " +'"'+ file +'"')
+            except Exception as e:
+                raise
+            finally:
+                os.environ["MYSQL_PWD"] = ""
+
+        public.WriteLog("TYPE_DATABASE", 'DATABASE_INPUT_SUCCESS',(name,))
+        return public.returnMsg(True, 'DATABASE_INPUT_SUCCESS')
+        #except Exception as ex:
+            #public.WriteLog("TYPE_DATABASE", 'DATABASE_INPUT_ERR',(name,str(ex)))
+            #return public.returnMsg(False,'DATABASE_INPUT_ERR')
+
+    #同步数据库到服务器
+    def SyncToDatabases(self,get):
+        # result = panelMysql.panelMysql().execute("show databases")
+        # isError=self.IsSqlError(result)
+        # if isError: return isError
+        type = int(get['type'])
+        n = 0
+        sql = public.M('databases')
+        if type == 0:
+            data = sql.field('id,sid,name,username,password,accept,db_type').select()
+            for value in data:
+                if value['db_type'] in ['1',1]:
+                    continue # 跳过远程数据库
+                result = self.ToDataBase(value)
+                if result == 1: n +=1
+        else:
+            import json
+            data = json.loads(get.ids)
+            for value in data:
+                find = sql.where("id=?",(value,)).field('id,sid,name,username,password,accept').find()
+                result = self.ToDataBase(find)
+                if result == 1: n +=1
+
+        return public.returnMsg(True,'DATABASE_SYNC_SUCCESS',(str(n),))
+
+    #配置
+    def mypass(self,act,password = None):
+        conf_file = '/etc/my.cnf'
+        conf_file_bak = '/etc/my.cnf.bak'
+        if os.path.getsize(conf_file) > 2:
+            public.writeFile(conf_file_bak,public.readFile(conf_file))
+            public.set_mode(conf_file_bak,600)
+            public.set_own(conf_file_bak,'mysql')
+        elif os.path.getsize(conf_file_bak) > 2:
+            public.writeFile(conf_file,public.readFile(conf_file_bak))
+            public.set_mode(conf_file,600)
+            public.set_own(conf_file,'mysql')
+
+        public.ExecShell("sed -i '/user=root/d' {}".format(conf_file))
+        public.ExecShell("sed -i '/password=/d' {}".format(conf_file))
+        if act:
+            password = public.M('config').where('id=?',(1,)).getField('mysql_root')
+            mycnf = public.readFile(conf_file)
+            if not mycnf: return False
+            src_dump_re = r"\[mysqldump\][^.]"
+            sub_dump = "[mysqldump]\nuser=root\npassword=\"{}\"\n".format(password)
+            mycnf = re.sub(src_dump_re, sub_dump, mycnf)
+            if len(mycnf) > 100: public.writeFile(conf_file,mycnf)
+            return True
+        return True
+
+    #添加到服务器
+    def ToDataBase(self,find):
+        #if find['username'] == 'bt_default': return 0
+        if len(find['password']) < 3 :
+            find['username'] = find['name']
+            find['password'] = public.md5(str(time.time()) + find['name'])[0:10]
+            public.M('databases').where("id=?",(find['id'],)).save('password,username',(find['password'],find['username']))
+        self.sid = find['sid']
+        mysql_obj = public.get_mysql_obj_by_sid(find['sid'])
+        result = mysql_obj.execute("create database `" + find['name'] + "`")
+        if "using password:" in str(result): return -1
+        if "Connection refused" in str(result): return -1
+
+        password = find['password']
+        #if find['password']!="" and len(find['password']) > 20:
+            #password = find['password']
+
+        self.__CreateUsers(find['name'],find['username'],password,find['accept'])
+        return 1
+
+
+    #从服务器获取数据库
+    def SyncGetDatabases(self,get):
+        self.sid = get.get('sid/d',0)
+        db_type = 0
+        if self.sid: db_type = 2
+        mysql_obj = public.get_mysql_obj_by_sid(self.sid)
+        data = mysql_obj.query("show databases")
+        isError = self.IsSqlError(data)
+        if isError != None: return isError
+        users = mysql_obj.query("select User,Host from mysql.user where User!='root' AND Host!='localhost' AND Host!=''")
+
+        if type(users) == str: return public.returnMsg(False,users)
+        if type(users) != list: return public.returnMsg(False,public.GetMySQLError(users))
+
+        sql = public.M('databases')
+        nameArr = ['information_schema','performance_schema','mysql','sys']
+        n = 0
+        for  value in data:
+            b = False
+            for key in nameArr:
+                if value[0] == key:
+                    b = True
+                    break
+            if b:continue
+            if sql.where("name=?",(value[0],)).count(): continue
+            host = '127.0.0.1'
+
+            for user in users:
+                if value[0] == user[0]:
+                    host = user[1]
+                    break
+
+            ps = public.getMsg('INPUT_PS')
+            if value[0] == 'test':
+                    ps = public.getMsg('DATABASE_TEST')
+
+            # XSS过虑
+            if not re.match("^[\w+\.-]+$",value[0]): continue
+
+            addTime = time.strftime('%Y-%m-%d %X',time.localtime())
+
+            if sql.table('databases').add('name,sid,db_type,username,password,accept,ps,addtime',(value[0],self.sid,db_type,value[0],'',host,ps,addTime)): n +=1
+
+        return public.returnMsg(True,'DATABASE_GET_SUCCESS',(str(n),))
+
+
+    #获取数据库权限
+    def GetDatabaseAccess(self,get):
+        name = get['name']
+        db_name = public.M('databases').where('username=?',name).getField('name')
+        mysql_obj = public.get_mysql_obj(db_name)
+        users = mysql_obj.query("select Host from mysql.user where User='" + name + "' AND Host!='localhost'")
+        isError = self.IsSqlError(users)
+        if isError != None: return isError
+        users = self.map_to_list(users)
+
+        if len(users)<1:
+            return public.returnMsg(True,"127.0.0.1")
+
+        accs = []
+        for c in users:
+            accs.append(c[0])
+        userStr = ','.join(accs)
+        return public.returnMsg(True,userStr)
+
+    #设置数据库权限
+    def SetDatabaseAccess(self,get):
+        name = get['name']
+        db_find = public.M('databases').where('username=?',(name,)).find()
+        db_name = db_find['name']
+        self.sid = db_find['sid']
+        mysql_obj = public.get_mysql_obj(db_name)
+        access = get['access'].strip()
+        if access in ['']: return public.returnMsg(False,'IP地址不能为空!')
+        password = public.M('databases').where("username=?",(name,)).getField('password')
+        result = mysql_obj.query("show databases")
+        isError = self.IsSqlError(result)
+        if isError != None: return isError
+        users = mysql_obj.query("select Host from mysql.user where User='" + name + "' AND Host!='localhost'")
+        for us in users:
+            mysql_obj.execute("drop user '" + name + "'@'" + us[0] + "'")
+        self.__CreateUsers(db_name,name,password,access)
+        return public.returnMsg(True, 'SET_SUCCESS')
+
+    #获取数据库配置信息
+    def GetMySQLInfo(self,get):
+        data = {}
+        try:
+            public.CheckMyCnf()
+            myfile = '/etc/my.cnf'
+            mycnf = public.readFile(myfile)
+            rep = "datadir\s*=\s*(.+)\n"
+            data['datadir'] = re.search(rep,mycnf).groups()[0]
+            rep = "port\s*=\s*([0-9]+)\s*\n"
+            data['port'] = re.search(rep,mycnf).groups()[0]
+        except:
+            data['datadir'] = '/www/server/data'
+            data['port'] = '3306'
+        return data
+
+    #修改数据库目录
+    def SetDataDir(self,get):
+        if get.datadir[-1] == '/': get.datadir = get.datadir[0:-1]
+        if len(get.datadir) > 32: return public.returnMsg(False,'数据目录长度不能超过32位')
+        if not re.search(r"^[0-9A-Za-z_/\\]+$",get.datadir): return public.returnMsg(False,'数据库路径中不能包含特殊符号')
+        if not os.path.exists(get.datadir): public.ExecShell('mkdir -p ' + get.datadir)
+
+        mysqlInfo = self.GetMySQLInfo(get)
+        if mysqlInfo['datadir'] == get.datadir: return public.returnMsg(False,'DATABASE_MOVE_RE')
+
+        public.ExecShell('/etc/init.d/mysqld stop')
+        public.ExecShell('\cp -arf ' + mysqlInfo['datadir'] + '/* ' + get.datadir + '/')
+        public.ExecShell('chown -R mysql.mysql ' + get.datadir)
+        public.ExecShell('chmod -R 755 ' + get.datadir)
+        public.ExecShell('rm -f ' + get.datadir + '/*.pid')
+        public.ExecShell('rm -f ' + get.datadir + '/*.err')
+
+        public.CheckMyCnf()
+        myfile = '/etc/my.cnf'
+        mycnf = public.readFile(myfile)
+        public.writeFile('/etc/my_backup.cnf',mycnf)
+        mycnf = mycnf.replace(mysqlInfo['datadir'],get.datadir)
+        public.writeFile(myfile,mycnf)
+        public.ExecShell('/etc/init.d/mysqld start')
+        result = public.ExecShell('ps aux|grep mysqld|grep -v grep')
+        if len(result[0]) > 10:
+            public.writeFile('data/datadir.pl',get.datadir)
+            return public.returnMsg(True,'DATABASE_MOVE_SUCCESS')
+        else:
+            public.ExecShell('pkill -9 mysqld')
+            public.writeFile(myfile,public.readFile('/etc/my_backup.cnf'))
+            public.ExecShell('/etc/init.d/mysqld start')
+            return public.returnMsg(False,'DATABASE_MOVE_ERR')
+
+    #修改数据库端口
+    def SetMySQLPort(self,get):
+        myfile = '/etc/my.cnf'
+        mycnf = public.readFile(myfile)
+        rep = r"port\s*=\s*([0-9]+)\s*\n"
+        mycnf = re.sub(rep,'port = ' + get.port + '\n',mycnf)
+        public.writeFile(myfile,mycnf)
+        public.ExecShell('/etc/init.d/mysqld restart')
+        return public.returnMsg(True,'EDIT_SUCCESS')
+
+    #获取错误日志
+    def GetErrorLog(self,get):
+        path = self.GetMySQLInfo(get)['datadir']
+        filename = ''
+        for n in os.listdir(path):
+            if len(n) < 5: continue
+            if n[-3:] == 'err':
+                filename = path + '/' + n
+                break
+        if not os.path.exists(filename): return public.returnMsg(False,'FILE_NOT_EXISTS')
+        if hasattr(get,'close'):
+            public.writeFile(filename,'')
+            return public.returnMsg(True,'LOG_CLOSE')
+        return public.GetNumLines(filename,1000)
+
+    #二进制日志开关
+    def BinLog(self,get):
+        myfile = '/etc/my.cnf'
+        mycnf = public.readFile(myfile)
+        masterslaveconf = "/www/server/panel/plugin/masterslave/data.json"
+        if mycnf.find('#log-bin=mysql-bin') != -1:
+            if hasattr(get,'status'): return public.returnMsg(False,'0')
+            mycnf = mycnf.replace('#log-bin=mysql-bin','log-bin=mysql-bin')
+            mycnf = mycnf.replace('#binlog_format=mixed','binlog_format=mixed')
+            public.ExecShell('sync')
+            public.ExecShell('/etc/init.d/mysqld restart')
+        else:
+            path = self.GetMySQLInfo(get)['datadir']
+            if not os.path.exists(path): return public.returnMsg(False,'数据库目录不存在!')
+            if hasattr(get,'status'):
+                dsize = 0
+                for n in os.listdir(path):
+                    if len(n) < 9: continue
+                    if n[0:9] == 'mysql-bin':
+                        dsize += os.path.getsize(path + '/' + n)
+                return public.returnMsg(True,dsize)
+            if os.path.exists(masterslaveconf):
+                return public.returnMsg(False, "请先卸载Mysql主从复制插件后再关闭二进制日志！！")
+            mycnf = mycnf.replace('log-bin=mysql-bin','#log-bin=mysql-bin')
+            mycnf = mycnf.replace('binlog_format=mixed','#binlog_format=mixed')
+            public.ExecShell('sync')
+            public.ExecShell('/etc/init.d/mysqld restart')
+            public.ExecShell('rm -f ' + path + '/mysql-bin.*')
+
+        public.writeFile(myfile,mycnf)
+        return public.returnMsg(True,'SUCCESS')
+
+    #获取MySQL配置状态
+    def GetDbStatus(self,get):
+        result = {}
+        data = self.map_to_list( panelMysql.panelMysql().query('show variables'))
+        gets = ['table_open_cache','thread_cache_size','query_cache_type','key_buffer_size','query_cache_size','tmp_table_size','max_heap_table_size','innodb_buffer_pool_size','innodb_additional_mem_pool_size','innodb_log_buffer_size','max_connections','sort_buffer_size','read_buffer_size','read_rnd_buffer_size','join_buffer_size','thread_stack','binlog_cache_size']
+        result['mem'] = {}
+        for d in data:
+            try:
+                for g in gets:
+                    if d[0] == g: result['mem'][g] = d[1]
+            except:
+                continue
+
+        if 'query_cache_type' in result['mem']:
+            if result['mem']['query_cache_type'] != 'ON': result['mem']['query_cache_size'] = '0'
+        return result
+
+    #设置MySQL配置参数
+    def SetDbConf(self,get):
+        gets = ['key_buffer_size','query_cache_size','tmp_table_size','max_heap_table_size','innodb_buffer_pool_size','innodb_log_buffer_size','max_connections','query_cache_type','table_open_cache','thread_cache_size','sort_buffer_size','read_buffer_size','read_rnd_buffer_size','join_buffer_size','thread_stack','binlog_cache_size']
+        emptys = ['max_connections','query_cache_type','thread_cache_size','table_open_cache']
+        mycnf = public.readFile('/etc/my.cnf')
+        n = 0
+        m_version = public.readFile('/www/server/mysql/version.pl')
+        if not m_version: m_version = ''
+        for g in gets:
+            if m_version.find('8.') == 0 and g in ['query_cache_type','query_cache_size']:
+                n += 1
+                continue
+            s = 'M'
+            if n > 5 and not g in ['key_buffer_size','query_cache_size','tmp_table_size','max_heap_table_size','innodb_buffer_pool_size','innodb_log_buffer_size']: s = 'K'
+            if g in emptys: s = ''
+            if g in ['innodb_log_buffer_size']:
+                s = 'M'
+                if int(get[g]) < 8:
+                    return public.returnMsg(False,'innodb_log_buffer_size不能小于8MB')
+
+            rep = r'\s*'+g+r'\s*=\s*\d+(M|K|k|m|G)?\n'
+
+            c = g+' = ' + get[g] + s +'\n'
+            if mycnf.find(g) != -1:
+                mycnf = re.sub(rep,'\n'+c,mycnf,1)
+            else:
+                mycnf = mycnf.replace('[mysqld]\n','[mysqld]\n' +c)
+            n+=1
+        public.writeFile('/etc/my.cnf',mycnf)
+        return public.returnMsg(True,'SET_SUCCESS')
+
+    #获取MySQL运行状态
+    def GetRunStatus(self,get):
+        import time
+        result = {}
+        data = panelMysql.panelMysql().query('show global status')
+        gets = ['Max_used_connections','Com_commit','Com_rollback','Questions','Innodb_buffer_pool_reads','Innodb_buffer_pool_read_requests','Key_reads','Key_read_requests','Key_writes','Key_write_requests','Qcache_hits','Qcache_inserts','Bytes_received','Bytes_sent','Aborted_clients','Aborted_connects','Created_tmp_disk_tables','Created_tmp_tables','Innodb_buffer_pool_pages_dirty','Opened_files','Open_tables','Opened_tables','Select_full_join','Select_range_check','Sort_merge_passes','Table_locks_waited','Threads_cached','Threads_connected','Threads_created','Threads_running','Connections','Uptime']
+        try:
+            if data[0] == 1045:
+                return public.returnMsg(False,'MySQL密码错误!')
+
+            for d in data:
+                for g in gets:
+                    try:
+                        if d[0] == g: result[g] = d[1]
+                    except:
+                        pass
+        except:
+            return public.returnMsg(False,str(data))
+
+        if not 'Run' in result and result:
+            result['Run'] = int(time.time()) - int(result['Uptime'])
+        tmp = panelMysql.panelMysql().query('show master status')
+        try:
+
+            result['File'] = tmp[0][0]
+            result['Position'] = tmp[0][1]
+        except:
+            result['File'] = 'OFF'
+            result['Position'] = 'OFF'
+        return result
+
+
+    #取慢日志
+    def GetSlowLogs(self,get):
+        path = self.GetMySQLInfo(get)['datadir'] + '/mysql-slow.log'
+        if not os.path.exists(path): return public.returnMsg(False,'日志文件不存在!')
+        return public.returnMsg(True,public.GetNumLines(path,100))
+
+
+    # 获取当前数据库信息
+    def GetInfo(self,get):
+        info=self.GetdataInfo(get)
+        return info
+        if info:
+            return info
+        else:
+            return public.returnMsg(False,"获取数据库失败!")
+
+    #修复表信息
+    def ReTable(self,get):
+        info=self.RepairTable(get)
+        if info:
+            return public.returnMsg(True,"修复完成!")
+        else:
+            return public.returnMsg(False,"修复失败!")
+
+    # 优化表
+    def OpTable(self,get):
+        info=self.OptimizeTable(get)
+        if info:
+            return public.returnMsg(True,"优化成功!")
+        else:
+            return public.returnMsg(False,"优化失败或者已经优化过了")
+
+    #更改表引擎
+    def AlTable(self,get):
+        info=self.AlterTable(get)
+        if info:
+            return public.returnMsg(True,"更改成功")
+        else:
+            return public.returnMsg(False,"影响行为0，可能是个空表或指定表不支持")
+
+    def get_average_num(self,slist):
+        """
+        @获取平均值
+        """
+        count = len(slist)
+        limit_size = 1 * 1024 * 1024
+        if count <= 0: return limit_size
+
+        if len(slist) > 1:
+            slist = sorted(slist)
+            limit_size =int((slist[0] + slist[-1])/2 * 0.85)
+        return limit_size
+
+    def get_database_size(self,ids,is_pid = False):
+        """
+        获取数据库大小
+        """
+        result = {}
+        for id in ids:
+            if not is_pid:
+                x = public.M('databases').where('id=?',id).field('id,sid,pid,name,ps,addtime').find()
+            else:
+                x = public.M('databases').where('pid=?',id).field('id,sid,pid,name,ps,addtime').find()
+            if not x: continue
+            x['backup_count'] = public.M('backup').where("pid=? AND type=?",(x['id'],'1')).count()
+            x['total'] = int(public.get_database_size_by_id(x['id']))
+            result[x['name']] = x
+        return result
+
+    def check_del_data(self,get):
+        """
+        @删除数据库前置检测
+        """
+        ids = json.loads(get.ids)
+        slist = {};result = [];db_list_size = []
+        db_data = self.get_database_size(ids)
+        for key in db_data:
+            data = db_data[key]
+            if not data['id'] in ids: continue
+
+            db_addtime = public.to_date(times = data['addtime'])
+            data['score'] = int(time.time() - db_addtime) + data['total']
+            data['st_time'] = db_addtime
+
+            if data['total'] > 0 : db_list_size.append(data['total'])
+            result.append(data)
+
+        slist['data'] = sorted(result,key= lambda  x:x['score'],reverse=True)
+        slist['db_size'] = self.get_average_num(db_list_size)
+        return slist
