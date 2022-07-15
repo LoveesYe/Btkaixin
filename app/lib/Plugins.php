@@ -105,6 +105,7 @@ class Plugins
     //下载插件包
     public static function download_plugin_package($plugin_name, $version, $os = 'Linux'){
         $filepath = get_data_dir($os).'plugins/package/'.$plugin_name.'-'.$version.'.zip';
+        #$filepath = get_data_dir($os).'plugins/package/'.$plugin_name.'/'.$plugin_name.'-'.$version.'.zip';
         $btapi = self::get_btapi($os);
         $result = $btapi->get_plugin_filename($plugin_name, $version);
         if($result && isset($result['status'])){
@@ -115,9 +116,11 @@ class Plugins
                     $zip = new ZipArchive;
                     if ($zip->open($filepath) === true)
                     {
-                        $zip->extractTo(get_data_dir($os).'plugins/folder/'.$plugin_name.'-'.$version);
+                        $zip->extractTo(get_data_dir($os).'plugins/folder/'.$plugin_name.'/'.$plugin_name.'-'.$version);
+                        #$zip->extractTo(get_data_dir($os).'plugins/folder/'.$plugin_name.'-'.$version);
                         $zip->close();
                         $main_filepath = get_data_dir($os).'plugins/folder/'.$plugin_name.'-'.$version.'/'.$plugin_name.'/'.$plugin_name.'_main.py';
+                        #$main_filepath = get_data_dir($os).'plugins/folder/'.$plugin_name.'-'.$version.'/'.$plugin_name.'/'.$plugin_name.'_main.py';
                         if(file_exists($main_filepath) && filesize($main_filepath)>10){
                             if(!strpos(file_get_contents($main_filepath), 'import ')){ //加密py文件，需要解密
                                 self::decode_plugin_main($plugin_name, $version, $main_filepath, $os);
