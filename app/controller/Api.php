@@ -55,7 +55,8 @@ class Api extends BaseController
             return '参数不正确';
         }
         if(!$this->checklist()) '你的服务器被禁止使用此云端';
-        $filepath = get_data_dir($os).'plugins/package/'.$plugin_name.'-'.$version.'.zip';
+        #$filepath = get_data_dir($os).'plugins/package/'.$plugin_name.'-'.$version.'.zip';
+        $filepath = get_data_dir($os).'plugins/package/'.$plugin_name.'/'.$plugin_name.'-'.$version.'.zip';
         if(file_exists($filepath)){
             $filename = $plugin_name.'.zip';
             $this->output_file($filepath, $filename);
